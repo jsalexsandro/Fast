@@ -1,0 +1,1 @@
+# Negocio do escopo que se apaga
