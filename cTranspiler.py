@@ -33,6 +33,14 @@ class Transpiler:
                 value += " " 
 
             if value in classed and typ == TT_DEFINATION:
+                for cc,vv in enumerate(values[count+1:]):
+                    if values[count+cc+1][0] == TT_DEFINATION:
+                        value += "*"
+                    elif values[count+cc+1][1] == "    ":
+                        pass
+                    else:break
+                    # if vv[count+cc][0] == TT_DEFINATION:
+                    #     print("SIM")
                 value += " "
 
             if value == "{" and typ == TT_SYMBOL:value = " { "
