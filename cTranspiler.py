@@ -27,9 +27,16 @@ class Transpiler:
             if value in types and typ == TT_TYPE:
                 value += " "
             
+            if value == "." and typ == TT_SYMBOL:
+                value = "->"
+
+
             if value in keywords and typ == TT_KEYWORD:
-                if value in {"public","private","protected"}:
-                    value += ':'
+                if value in {"public","private","protected","extends"}:
+                    if value == "extends":
+                        value = ":public"
+                    else:    
+                        value += ':'
                 value += " " 
 
             if value in classed and typ == TT_DEFINATION:

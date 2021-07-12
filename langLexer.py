@@ -20,7 +20,7 @@ stringInitedQuote = ""
 
 keywords = [
     "const","return","if","else","namespace","switch",
-    "case","new","class","constructor","public","private","protected",
+    "case","new","class","extends","constructor","public","private","protected",
     "extern"
 ]
 
