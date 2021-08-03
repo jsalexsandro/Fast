@@ -142,7 +142,7 @@ class Transpiler:
         self.fileBuild_Name = self.fileBuild.replace(".cpp",extForBuild())
         # self.fileBuild_Name = self.fileBuild.replace(".cpp",".exe")
         fileBuilded = GetFinalExtension(self.fileBuild_Name)
-        fileBuilded = GetFinalExtension(self.fileBuild_Name)
+        # fileBuilded = GetFinalExtension(self.fileBuild_Name)
         with open(self.fileBuild,"wt+") as file:
             file.write(self.lang)
         
@@ -152,4 +152,6 @@ class Transpiler:
         #     os.remove(fileBuilded)
         # shutil.move(self.fileBuild_Name,"./")
         # os.system(fileBuilded)
-        os.system("cd run && ./"+fileBuilded)
+        # print(fileBuilded)
+        # self.fileBuild_Name
+        os.system(self.fileBuild_Name)
