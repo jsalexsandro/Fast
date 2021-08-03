@@ -9,6 +9,7 @@ import re
 
 TT_NUMBER = "NUMBER"
 TT_STRING = "STRING"
+TT_COMENT = "COMENT"
 TT_BOOL = "BOOL"
 TT_KEYWORD = "KEYWORD"
 TT_TYPE = "TYPE"
@@ -17,11 +18,12 @@ TT_DEFINATION = "DEFINATION"
 
 stringInit = 0
 stringInitedQuote = ""
+coment_init = 0
 
 keywords = [
     "const","return","if","else","namespace","switch",
-    "case","new","class","extends","constructor","public","private","protected",
-    "extern"
+    "case","new","class","extends","constructor","static","public","private","protected",
+    "extern","namespace","var","while","for"
 ]
 
 bolleans = ["true","false"]
@@ -33,8 +35,9 @@ types = [
     "string",
     "float",
     "bool",
-    "null",
-    "undefined",
+    "void"
+    # "null",
+    # "undefined",
 ]
 
 symbols = {
@@ -71,27 +74,32 @@ class Lexer:
 
 
     def Tokenize(self):
-        global stringInit,stringInitedQuote
+        global stringInit,stringInitedQuote,coment_init
         for count,value in enumerate(self.codeSplitedKeys):
-            if re.match("[0-9]",value):
+            if value == "/" and self.codeSplitedKeys[count+1] == "/":
+                coment_init = 1
+            elif value == "\n" and coment_init == 1:
+                coment_init = 0
+
+            elif re.match("[0-9]",value) and coment_init == 0:
                 # Set String
                 if stringInit % 2 != 0:
                     self.tokens.append(AppendToken(TT_STRING,value,value))
                 else:
                     self.tokens.append(AppendToken(TT_NUMBER,""+value,""+value))
             
-            elif value in keywords:
+            elif value in keywords and coment_init == 0:
                 if stringInit % 2 != 0:
                     self.tokens.append(AppendToken(TT_STRING,value,value))
                 else:
                     self.tokens.append(AppendToken(TT_KEYWORD,value,value))
-            elif value in types:
+            elif value in types and coment_init == 0:
                 # Set String
                 if stringInit % 2 != 0:
                     self.tokens.append(AppendToken(TT_STRING,value,value))
                 else:
                     self.tokens.append(AppendToken(TT_TYPE,value,value))
-            elif value in symbols:
+            elif value in symbols and coment_init == 0:
                 if symbols[value] in {'singleQuote','doubleQuote'}:
                     if stringInit % 2 == 0:
                         stringInitedQuote = symbols[value]
@@ -111,8 +119,8 @@ class Lexer:
                 else:
                     if symbols[value] != "space":
                         self.tokens.append(AppendToken(TT_SYMBOL,symbols[value],value))
-            
-            elif value in bolleans:
+
+            elif value in bolleans and coment_init == 0:
                 if stringInit % 2 != 0:
                     self.tokens.append(AppendToken(TT_STRING,value,value))
                 else:
@@ -122,6 +130,7 @@ class Lexer:
                 # Set String
                 if stringInit % 2 != 0:
                     self.tokens.append(AppendToken(TT_STRING,value,value))
+                elif coment_init == 1:pass
                 else:
                     self.tokens.append(AppendToken(TT_DEFINATION,value,value))
         return self.tokens

@@ -1,3 +1,13 @@
-int main(){
-    print("Olá, Mundo!")
+// "Hello World" using function as entry point
+
+int helloworld(){
+    print("Hello World!")
 }
+
+// "Hello World" using class as entry point
+ 
+// class helloworld {
+//    public constructor(){
+//        print("Hello World!")
+//    }
+//}

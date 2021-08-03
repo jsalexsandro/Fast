@@ -1,5 +1,13 @@
-lib = r"""#include <stdio.h>
+########################################
+# Lins for "Fast" Language !           #
+########################################
+# Coding By José Alexsandro            #
+# Github: https://github.com/eualexdev #
+########################################
 
-int print(char* value){
-    printf("%s\n",value);
+
+lib = r"""#include <iostream>
+
+template <class print_template> print_template print(print_template values){
+    std::cout << values << std::endl;
 };"""

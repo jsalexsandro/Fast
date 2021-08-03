@@ -5,9 +5,7 @@
 # Github: https://github.com/eualexdev #
 ########################################
 
-from os import pipe
-from typing import no_type_check
-from excp import PrintExecption
+from variables import GetFinalExtension
 from langLexer import (
     TT_KEYWORD,
     symbols,
@@ -27,10 +25,12 @@ class_ = []
 
 import sys
 class Parser:
-    def __init__(self,tokens = []) -> None:
+    def __init__(self,tokens = [],file="") -> None:
         self.tokens = tokens
         self.lang = []
         self.class_ = ""
+        self.file = file
+        self.port_func_run = GetFinalExtension(self.file).replace(".fast","")
         self.Analitys()
         # print(class_)
         # print(SCOPE_APPEND)
@@ -45,7 +45,7 @@ class Parser:
             token = value["type"]
             if token == TT_SYMBOL:
                 if value["name"] == symbols["\n"]:
-                    if self.tokens[count-1]["value"] not in {"{","[","("}:
+                    if self.tokens[count-1]["value"] not in {";","{","[","("}:
                         self.tokens[count]["value"] = ";\n"
                     lines += 1
                 # elif self.tokens[count-1]["value"] == ")":
@@ -53,16 +53,26 @@ class Parser:
                 elif value["name"] == symbols["\t"]:
                     self.tokens[count]["value"] = "    "
                 
-            if value["value"] == "print" and token == TT_DEFINATION:
-                if not '"libs.h"' in imports:
-                    imports.add('"libs.h"')
+            if value["value"] in {"print","input"} and token == TT_DEFINATION:
+                if not '"libs.hpp"' in imports:
+                    imports.add('"libs.hpp"')
 
             if value["value"] == "class" and token == TT_KEYWORD:
                 for cc,vv in enumerate(self.tokens[count+1:]):
                     if vv["type"] == TT_DEFINATION:
+                        if vv["value"] == self.port_func_run:
+                            if vv["value"] == "main":
+                                self.tokens[count+cc+1]["value"] = "__main__"
                         self.class_ =  vv["value"]
                         class_.append(vv["value"])
                         break
+
+            # if value["value"] == "function" and token == TT_KEYWORD:
+            #     for cc,vv in enumerate(self.tokens[count+1:]):
+            #         if vv["type"] == TT_DEFINATION:
+            #             if vv["value"] == "main":
+            #                 self.tokens[count+cc+1]["value"] = "__main__"
+                        
                 
             if value["value"] == "constructor" and token == TT_KEYWORD:
                 self.tokens[count]["value"] = self.class_
@@ -81,6 +91,11 @@ class Parser:
 
                 if value["value"] == "string":
                     self.tokens[count]["value"] = "char * "
+                        # imports.add("<string.h>")
+                
+                if value["value"] == "int":
+                    self.tokens[count]["value"] = "long "
+                        # imports.add("<string.h>")
 
                 if value["value"] == "bool":
                     if not "<stdbool.h>" in imports:
@@ -94,9 +109,10 @@ class Parser:
                 its = ""
                 for cc,vv in enumerate(self.tokens[count+1:]):
                     if self.tokens[count+cc+1]["type"] == TT_DEFINATION:
-                        if self.tokens[count+cc+1]["value"] == "main":
-                            self.tokens[count+cc+1]["value"] = "__main__"
-                            MAIN_FUNCTION_DEFINED = True
+                        if self.tokens[count+cc+1]["value"] == self.port_func_run:
+                            if self.tokens[count+cc+1]["value"] == "main":
+                                self.tokens[count+cc+1]["value"] = "__main__"
+                        
                         for ccc,vvv in enumerate(self.tokens[count+cc+1:]):
                             if vvv["type"] == TT_DEFINATION:
                                 if defined == "" :

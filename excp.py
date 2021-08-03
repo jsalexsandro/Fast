@@ -1,3 +1,11 @@
+########################################
+# Excptions for "Fast" Language !      #
+########################################
+# Coding By José Alexsandro            #
+# Github: https://github.com/eualexdev #
+########################################
+
+
 def PrintExecption(type,ins,line,value=""):
     if type == 'DefineError':
         return [False,f"DefineError line {line} in '{ins}' - '{value}' value not implicit\n"]

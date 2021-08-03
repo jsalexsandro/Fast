@@ -1,3 +1,9 @@
+########################################
+# Lang Help for "Fast" Language !      #
+########################################
+# Coding By José Alexsandro            #
+# Github: https://github.com/eualexdev #
+########################################
 
 
 from variables import langName,langVersion

@@ -1,40 +1,76 @@
+########################################
+# CPP Tranpiler for "Fast" Language !  #
+########################################
+# Coding By José Alexsandro            #
+# Github: https://github.com/eualexdev #
+########################################
+
+
 import os
-import shutil
-import sys
 import libs
 from variables import GetFinalExtension
-from langLexer import TT_DEFINATION, TT_KEYWORD, TT_SYMBOL, TT_TYPE, types,keywords
+from langLexer import Lexer, TT_DEFINATION, TT_KEYWORD, TT_SYMBOL, TT_TYPE, types,keywords
+from langParse import Parser
 
-imports = [
-    "<stdio.h>",
-    "<locale.h>"
-]
-native_imports = set()
 
 class Transpiler:
-    def __init__(self,mainExist=False,file="",values = "",impors=[],classed=[]) -> None:
+    def __init__(self,code,file_) -> None:
+        lexer = Lexer(code+";")
+        tokens = lexer.Tokenize()
+        parser = Parser(tokens,file_).Get()
+        mainExist=parser[0]
+        file=file_
+        values = parser[1]
+        impors=parser[2]
+        classed=parser[3]
+        self.imports = [
+            "<iostream>",
+            "<locale.h>"
+        ]
+        self.commands_add = [
+            # "/* using namespace std;\n */"
+        ]
+        self.native_imports = set()
         self.languagePathBuilds = os.getcwd() + "\\run"
         # self.languagePathBuilds = "C:\\Users\\Alexsandro\\Desktop\\FastLanguage" + "\\run"
         self.file = file
         if not os.path.exists(self.languagePathBuilds):
             os.mkdir(self.languagePathBuilds)
         for i in impors:
-            imports.append(i)
+            self.imports.append(i)
         self.lang = ""
+        self.lang = self.setCommands()
         for count,value in enumerate(values):
             typ = value[0]
             value = value[1]
             if value in types and typ == TT_TYPE:
                 value += " "
             
-            if value == "." and typ == TT_SYMBOL:
-                value = "->"
+            # if value == "." and typ == TT_SYMBOL:
+            #     value = "->"
 
+            if value == "var" and typ == TT_KEYWORD:
+                value = "auto "
+                
+            if value == "namespace" and typ == TT_KEYWORD:
+                value = "namespace "
+                
+            # if value == "function" and typ == TT_KEYWORD:
+            #     value = ""
+                
+            if value == "while" and typ == TT_KEYWORD:
+                value = "while "
+
+            if value == "for" and T == TT_KEYWORD:
+                value = "for "
+                
 
             if value in keywords and typ == TT_KEYWORD:
-                if value in {"public","private","protected","extends"}:
+                if value in {"public","private","protected","extends","static"}:
                     if value == "extends":
                         value = ":public"
+                    elif value == "static":
+                        value = "static"
                     else:    
                         value += ':'
                 value += " " 
@@ -42,13 +78,13 @@ class Transpiler:
             if value in classed and typ == TT_DEFINATION:
                 for cc,vv in enumerate(values[count+1:]):
                     if values[count+cc+1][0] == TT_DEFINATION:
-                        value += "*"
+                        value += " * "
                     elif values[count+cc+1][1] == "    ":
                         pass
                     else:break
                     # if vv[count+cc][0] == TT_DEFINATION:
                     #     print("SIM")
-                value += " "
+                value += ""
 
             if value == "{" and typ == TT_SYMBOL:value = " { "
             if value == "'" and typ == TT_SYMBOL:value = '"'
@@ -58,13 +94,16 @@ class Transpiler:
         self.setMainFuncPoint()
         self.setImports()
 
-        self.__Build()
-      
+        self.Build()
+        
     def setMainFuncPoint(self):
+        port_func_run = GetFinalExtension(self.file).replace(".fast","")
+        if port_func_run == "main":
+            port_func_run = "__main__"
         codeMain = [
             "\n\nint main(){\n",
             '    setlocale(LC_ALL,"");\n',
-            "    __main__();\n",
+            f"    {port_func_run}();\n",
             "    return 0;\n",
             "};"
         ]
@@ -72,25 +111,31 @@ class Transpiler:
         for i in codeMain:self.lang += i
 
 
+    def setCommands(self):
+        code = ""
+        for i in self.commands_add:
+            code += i+"\n"
+        return code
+
     def setImports(self):
         code = ""
-        for i in imports:
-            if i == '"libs.h"':
-                self.import_('"libs.h"')
-                code = code.replace("#include <stdio.h>\n","")
+        for i in self.imports:
+            if i == '"libs.hpp"':
+                self.import_('"libs.hpp"')
+                code = code.replace("#include <iostream>\n","")
             code += "#include "+i+"\n"
         code += "\n"
         self.lang = code + self.lang
 
     def import_(self,lib):
         global native_imports
-        if lib == '"libs.h"':
-            local = self.languagePathBuilds+"\\libs.h"
+        if lib == '"libs.hpp"':
+            local = self.languagePathBuilds+"\\libs.hpp"
             with open(local,"wt+") as l:
                 l.write(libs.lib.replace("[\\n]","\n"))
-            native_imports.add(local)
+            self.native_imports.add(local)
 
-    def __Build(self):  
+    def Build(self):  
         f = GetFinalExtension(self.file.replace(".fast",".cpp"))
         self.fileBuild = self.languagePathBuilds + f"\\{f}"
         self.fileBuild_Name = self.fileBuild.replace(".cpp","")
