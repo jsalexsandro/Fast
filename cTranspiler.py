@@ -130,14 +130,14 @@ class Transpiler:
     def import_(self,lib):
         global native_imports
         if lib == '"libs.hpp"':
-            local = self.languagePathBuilds+"\\libs.hpp"
+            local = os.path.join(self.languagePathBuilds,"libs.hpp")
             with open(local,"wt+") as l:
                 l.write(libs.lib.replace("[\\n]","\n"))
             self.native_imports.add(local)
 
     def Build(self):  
         f = GetFinalExtension(self.file.replace(".fast",".cpp"))
-        self.fileBuild = self.languagePathBuilds + f"\\{f}"
+        self.fileBuild = os.path.join(self.languagePathBuilds,f"{f}")
         self.fileBuild_Name = self.fileBuild.replace(".cpp","")
         # self.fileBuild_Name = self.fileBuild.replace(".cpp",".exe")
         fileBuilded = GetFinalExtension(self.fileBuild_Name)
