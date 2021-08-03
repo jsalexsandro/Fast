@@ -152,4 +152,4 @@ class Transpiler:
         #     os.remove(fileBuilded)
         # shutil.move(self.fileBuild_Name,"./")
         # os.system(fileBuilded)
-        os.system("cd run && "+fileBuilded)
+        os.system("cd run && ./"+fileBuilded)
