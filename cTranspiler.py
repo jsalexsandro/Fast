@@ -6,7 +6,7 @@
 ########################################
 
 
-import os
+import os,sys
 import libs
 from variables import GetFinalExtension
 from langLexer import Lexer, TT_DEFINATION, TT_KEYWORD, TT_SYMBOL, TT_TYPE, types,keywords
@@ -31,7 +31,7 @@ class Transpiler:
             # "/* using namespace std;\n */"
         ]
         self.native_imports = set()
-        self.languagePathBuilds = os.getcwd() + "\\run"
+        self.languagePathBuilds = "\\".join([i for i in sys.argv[0].split("\\")[0:-1]])+"\\run"
         # self.languagePathBuilds = "C:\\Users\\Alexsandro\\Desktop\\FastLanguage" + "\\run"
         self.file = file
         if not os.path.exists(self.languagePathBuilds):
@@ -61,7 +61,7 @@ class Transpiler:
             if value == "while" and typ == TT_KEYWORD:
                 value = "while "
 
-            if value == "for" and T == TT_KEYWORD:
+            if value == "for" and typ == TT_KEYWORD:
                 value = "for "
                 
 
