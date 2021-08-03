@@ -8,7 +8,7 @@
 
 import os,sys
 import libs
-from variables import GetFinalExtension
+from variables import GetFinalExtension, extForBuild
 from langLexer import Lexer, TT_DEFINATION, TT_KEYWORD, TT_SYMBOL, TT_TYPE, types,keywords
 from langParse import Parser
 
@@ -137,8 +137,9 @@ class Transpiler:
 
     def Build(self):  
         f = GetFinalExtension(self.file.replace(".fast",".cpp"))
+        
         self.fileBuild = os.path.join(self.languagePathBuilds,f"{f}")
-        self.fileBuild_Name = self.fileBuild.replace(".cpp","")
+        self.fileBuild_Name = self.fileBuild.replace(".cpp",extForBuild())
         # self.fileBuild_Name = self.fileBuild.replace(".cpp",".exe")
         fileBuilded = GetFinalExtension(self.fileBuild_Name)
         fileBuilded = GetFinalExtension(self.fileBuild_Name)
