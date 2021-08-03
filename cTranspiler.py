@@ -31,7 +31,7 @@ class Transpiler:
             # "/* using namespace std;\n */"
         ]
         self.native_imports = set()
-        self.languagePathBuilds = "\\".join([i for i in sys.argv[0].split("\\")[0:-1]])+"\\run"
+        self.languagePathBuilds = os.path.join("\ "[0].join([i for i in sys.argv[0].split("\\")[0:-1]]),"run")
         # self.languagePathBuilds = "C:\\Users\\Alexsandro\\Desktop\\FastLanguage" + "\\run"
         self.file = file
         if not os.path.exists(self.languagePathBuilds):
