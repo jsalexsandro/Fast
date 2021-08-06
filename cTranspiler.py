@@ -190,6 +190,7 @@ class Transpiler:
         # if os.path.exists(fileNormalBuild):
         #     os.remove(fileNormalBuild)
         # os.system(f"{mv_move} {self.fileBuild_Name} {self.languagePathNormal}")
+        print(fileNormalBuild)
         os.system(f"{fileNormalBuild} {' '.join(sys.argv[2:])}")
         # print(self.fileBuild,self.fileBuild_Name)
         # print(fileBuilded)
