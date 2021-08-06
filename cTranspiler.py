@@ -186,11 +186,11 @@ class Transpiler:
             file.write(self.lang)
         
         os.system("g++ "+self.fileBuild +" -w -O3 -o "+self.fileBuild_Name)
-        fileNormalBuild = os.path.join(self.languagePathNormal,fileBuilded)
-        if os.path.exists(fileNormalBuild):
-            os.remove(fileNormalBuild)
-        shutil.move(self.fileBuild_Name,self.languagePathNormal)
-        os.system(f"{fileNormalBuild} {' '.join(sys.argv[2:])}")
+        # fileNormalBuild = os.path.join(self.languagePathNormal,fileBuilded)
+        # if os.path.exists(fileNormalBuild):
+        #     os.remove(fileNormalBuild)
+        # shutil.move(self.fileBuild_Name,self.languagePathNormal)
+        os.system(f"{self.fileBuild_Name} {' '.join(sys.argv[2:])}")
         # print(self.fileBuild,self.fileBuild_Name)
         # print(fileBuilded)
             # except:pass
