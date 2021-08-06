@@ -1,13 +1,13 @@
 // "Hello World" using function as entry point
 
 int helloworld(){
-    print("Hello World!")
+    print("Hello World!");
 }
 
 // "Hello World" using class as entry point
  
 // class helloworld {
 //    public constructor(){
-//        print("Hello World!")
+//        print("Hello World!");
 //    }
 //}

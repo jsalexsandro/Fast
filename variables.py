@@ -27,3 +27,5 @@ def extForBuild():
         return ".exe"
     elif GetPlatform() == "linux":
         return ".out"
+    else:
+        return str(input("Extension: "))

@@ -14,7 +14,7 @@ class Interpreter:
         with open(file,"rt",encoding="utf-8") as f:
             self.fastCode = f.read()
             self.fastCode = self.fastCode.replace("    ","\t")
-            Transpiler(self.fastCode+";",self.file)
+            Transpiler(self.fastCode+"",self.file)
         # lexer = Lexer(self.fastCode+";")
         # tokens = lexer.Tokenize()
         # parser = Parser(tokens).Get()

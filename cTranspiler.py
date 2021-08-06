@@ -6,11 +6,16 @@
 ########################################
 
 
-import os,sys
+def debug(a="",b=""):pass
+    # if b != "":print(a+" : "+b)
+
+import os,sys,shutil
+from re import T
 import libs
 from variables import GetFinalExtension, extForBuild
-from langLexer import Lexer, TT_DEFINATION, TT_KEYWORD, TT_SYMBOL, TT_TYPE, types,keywords
+from langLexer import Lexer, TT_COMENT, TT_DEFINATION, TT_KEYWORD, TT_SYMBOL, TT_TYPE, types,keywords
 from langParse import Parser
+from msg import generated_code_for_insert
 
 
 class Transpiler:
@@ -18,37 +23,59 @@ class Transpiler:
         lexer = Lexer(code+";")
         tokens = lexer.Tokenize()
         parser = Parser(tokens,file_).Get()
-        mainExist=parser[0]
+        entryPointExist=parser[0]
+        if entryPointExist == False:
+            sys.exit( print("Entry point not defined!"))
         file=file_
-        values = parser[1]
+        self.values = parser[1]
         impors=parser[2]
         classed=parser[3]
-        self.imports = [
-            "<iostream>",
-            "<locale.h>"
-        ]
+        self.terch_code_apd = parser[4]
+        self.imports = impors
         self.commands_add = [
             # "/* using namespace std;\n */"
+            "char ** argv;\n"
         ]
         self.native_imports = set()
-        self.languagePathBuilds = os.path.join("\ "[0].join([i for i in sys.argv[0].split("\\")[0:-1]]),"run")
+        # self.languagePathBuilds = os.path.join("\ "[0].join([i for i in sys.argv[0].split("\\")[0:-1]]),"run")
+        self.languagePathBuilds = os.path.join(os.getcwd(),"run")
+        self.languagePathNormal = os.path.join(os.getcwd(),"")
         # self.languagePathBuilds = "C:\\Users\\Alexsandro\\Desktop\\FastLanguage" + "\\run"
         self.file = file
         if not os.path.exists(self.languagePathBuilds):
             os.mkdir(self.languagePathBuilds)
-        for i in impors:
-            self.imports.append(i)
         self.lang = ""
-        self.lang = self.setCommands()
-        for count,value in enumerate(values):
+        for count,value in enumerate(self.values):
             typ = value[0]
             value = value[1]
+
+
+            debug(typ,value)
+            # if typ == TT_SYMBOL and value == "\n":
+            #     if self.values[count-1][1] not in {";","{","[","("}:
+            #         value = ";\n"
+
+            if typ == TT_SYMBOL and value == "}":
+                if self.values[count+1][1] != ";":
+                    value += ';'
+            
+            if typ == TT_COMENT:
+                value = ""
+
             if value in types and typ == TT_TYPE:
+                if value == "string":
+                    value = "char *"
+                if value == "int":
+                    value = "long"
+                if value == "float":
+                    value = "double"
+
                 value += " "
             
             # if value == "." and typ == TT_SYMBOL:
             #     value = "->"
 
+           
             if value == "var" and typ == TT_KEYWORD:
                 value = "auto "
                 
@@ -76,10 +103,10 @@ class Transpiler:
                 value += " " 
 
             if value in classed and typ == TT_DEFINATION:
-                for cc,vv in enumerate(values[count+1:]):
-                    if values[count+cc+1][0] == TT_DEFINATION:
+                for cc,vv in enumerate(self.values[count+1:]):
+                    if self.values[count+cc+1][0] == TT_DEFINATION:
                         value += " * "
-                    elif values[count+cc+1][1] == "    ":
+                    elif self.values[count+cc+1][1] == "    ":
                         pass
                     else:break
                     # if vv[count+cc][0] == TT_DEFINATION:
@@ -90,21 +117,26 @@ class Transpiler:
             if value == "'" and typ == TT_SYMBOL:value = '"'
 
             self.lang += value
-        
+
         self.setMainFuncPoint()
+        self.setNewTrechCode()
+        self.setCommands()
         self.setImports()
+        self.lang = generated_code_for_insert.replace("[file]",file) + self.lang
 
         self.Build()
-        
+
+
     def setMainFuncPoint(self):
         port_func_run = GetFinalExtension(self.file).replace(".fast","")
         if port_func_run == "main":
             port_func_run = "__main__"
         codeMain = [
-            "\n\nint main(){\n",
-            '    setlocale(LC_ALL,"");\n',
-            f"    {port_func_run}();\n",
-            "    return 0;\n",
+            "\n\nint main(int _argc,char * _argv[]){\n",
+            'setlocale(LC_ALL,"");\n',
+            "argv = _argv;\n"
+            f"{port_func_run}();\n",
+            "return 0;\n",
             "};"
         ]
 
@@ -115,25 +147,33 @@ class Transpiler:
         code = ""
         for i in self.commands_add:
             code += i+"\n"
-        return code
+        self.lang = code + self.lang
+
+
+    def setNewTrechCode(self):
+        code = ""
+        for i in self.terch_code_apd:
+            code = code + i + "\n"
+
+        self.lang = code + self.lang
 
     def setImports(self):
         code = ""
         for i in self.imports:
-            if i == '"libs.hpp"':
-                self.import_('"libs.hpp"')
-                code = code.replace("#include <iostream>\n","")
+            # if i == '"libs.hpp"':
+            #     self.import_('"libs.hpp"')
+            #     code = code.replace("#include <iostream>\n","")
             code += "#include "+i+"\n"
         code += "\n"
         self.lang = code + self.lang
 
-    def import_(self,lib):
-        global native_imports
-        if lib == '"libs.hpp"':
-            local = os.path.join(self.languagePathBuilds,"libs.hpp")
-            with open(local,"wt+") as l:
-                l.write(libs.lib.replace("[\\n]","\n"))
-            self.native_imports.add(local)
+    # def import_(self,lib):
+    #     global native_imports
+    #     if lib == '"libs.hpp"':
+    #         local = os.path.join(self.languagePathBuilds,"libs.hpp")
+    #         with open(local,"wt+") as l:
+    #             l.write(libs.lib.replace("[\\n]","\n"))
+    #         self.native_imports.add(local)
 
     def Build(self):  
         f = GetFinalExtension(self.file.replace(".fast",".cpp"))
@@ -142,16 +182,24 @@ class Transpiler:
         self.fileBuild_Name = self.fileBuild.replace(".cpp",extForBuild())
         # self.fileBuild_Name = self.fileBuild.replace(".cpp",".exe")
         fileBuilded = GetFinalExtension(self.fileBuild_Name)
-        # fileBuilded = GetFinalExtension(self.fileBuild_Name)
         with open(self.fileBuild,"wt+") as file:
             file.write(self.lang)
         
-        os.system("g++ "+self.fileBuild +" -w -O3 -o "+self.fileBuild_Name)
+        try:
+            os.system("g++ "+self.fileBuild +" -w -O3 -o "+self.fileBuild_Name)
+            fileNormalBuild = os.path.join(self.languagePathNormal,fileBuilded)
+            if os.path.exists(fileNormalBuild):
+                os.remove(fileNormalBuild)
+            shutil.move(self.fileBuild_Name,self.languagePathNormal)
+            os.system(f"{fileNormalBuild} {' '.join(sys.argv[2:])}")
+        except:
+            print("Erro in compilation")
+        # print(self.fileBuild,self.fileBuild_Name)
+        # print(fileBuilded)
             # except:pass
         # if os.path.exists(fileBuilded):
         #     os.remove(fileBuilded)
         # shutil.move(self.fileBuild_Name,"./")
-        # os.system(fileBuilded)
         # print(fileBuilded)
         # self.fileBuild_Name
-        os.system(self.fileBuild_Name)
+        # os.system(self.fileBuild_Name)

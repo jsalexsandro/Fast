@@ -14,13 +14,21 @@ from langLexer import (
     TT_TYPE
 )
 
-SCOPE_APPEND = []
+from libs import (
+print_fast,
+types_fast
+)
 
-MAIN_FUNCTION_DEFINED = False
+SCOPE_APPEND = []
+ENTRY_POINT_DEFINED = False
 EXECUTE = True
 ERROS = ""
 
-imports = set()
+imports = {
+    "<iostream>",
+    "<locale.h>"
+}
+terch_code_append =set()
 class_ = []
 
 import sys
@@ -38,31 +46,56 @@ class Parser:
             print(ERROS)
             sys.exit()
 
+    def setNewCode(self,v):
+        global terch_code_append
+        for i in v[0]:
+            self.setImport(i)
+        if not v[1] in terch_code_append:
+            terch_code_append.add(v[1])
+
+    def setImport(self,c):
+        global imports
+        if (not c in imports):
+            imports.add(c)
+
+    def setAutomaticCodeImport(self,c,t,ii,set):
+        if c == ii and t == TT_DEFINATION:
+            self.setNewCode(set)
+
     def Analitys(self): 
-        global EXECUTE,ERROS,MAIN_FUNCTION_DEFINED,SCOPE_APPEND,imports,class_
+        global EXECUTE,ERROS,ENTRY_POINT_DEFINED,SCOPE_APPEND,imports,class_,terch_code_append
         lines = 1
         for count,value in enumerate(self.tokens):
             token = value["type"]
-            if token == TT_SYMBOL:
-                if value["name"] == symbols["\n"]:
-                    if self.tokens[count-1]["value"] not in {";","{","[","("}:
-                        self.tokens[count]["value"] = ";\n"
-                    lines += 1
-                # elif self.tokens[count-1]["value"] == ")":
-                #         self.tokens[count]["value"] = ");"
-                elif value["name"] == symbols["\t"]:
-                    self.tokens[count]["value"] = "    "
-                
-            if value["value"] in {"print","input"} and token == TT_DEFINATION:
-                if not '"libs.hpp"' in imports:
-                    imports.add('"libs.hpp"')
+            # if token == TT_SYMBOL:
+            #     print()
+            #     if value["name"] == symbols["\n"]:
+            #         if (
+            #             self.tokens[count-1]["value"] not in {";","{","[","("}
+            #             # and self.tokens[count+1]["name"] != "newLine"
+            #         ):
+            #             self.tokens[count]["value"] = ";\n"
+            #         lines += 1
+            #     # elif self.tokens[count-1]["value"] == ")":
+            #     #         self.tokens[count]["value"] = ");"
+            #     elif value["name"] == symbols["\t"]:
+            #         self.tokens[count]["value"] = "    "
+            self.setAutomaticCodeImport(value["value"],token,"print",print_fast)
+            self.setAutomaticCodeImport(value["value"],token,"type",types_fast)
+            # if value["value"] in {"print"} and token == TT_DEFINATION:
+            #     self.setNewCode(print_fast)
+            #     # print("code_nw")
+            #     # pass
 
             if value["value"] == "class" and token == TT_KEYWORD:
                 for cc,vv in enumerate(self.tokens[count+1:]):
                     if vv["type"] == TT_DEFINATION:
                         if vv["value"] == self.port_func_run:
-                            if vv["value"] == "main":
-                                self.tokens[count+cc+1]["value"] = "__main__"
+                            ENTRY_POINT_DEFINED = True
+                            
+                        if vv["value"] == "main":
+                            self.tokens[count+cc+1]["value"] = "__main__"
+
                         self.class_ =  vv["value"]
                         class_.append(vv["value"])
                         break
@@ -89,20 +122,19 @@ class Parser:
                 #             # cExtern = cc+count-c
                 #             break
 
-                if value["value"] == "string":
-                    self.tokens[count]["value"] = "char * "
+                if value["value"] == "string":pass
+                    # self.tokens[count]["value"] = "char * "
                         # imports.add("<string.h>")
                 
-                if value["value"] == "int":
-                    self.tokens[count]["value"] = "long "
+                if value["value"] == "int":pass
+                    # self.tokens[count]["value"] = "long "
                         # imports.add("<string.h>")
 
                 if value["value"] == "bool":
-                    if not "<stdbool.h>" in imports:
-                        imports.add("<stdbool.h>")
+                    self.setImport("<stdbool.h>")
 
-                if value["value"] == "float":
-                    self.tokens[count]["value"] = "double "
+                if value["value"] == "float":pass
+                    # self.tokens[count]["value"] = "double "
 
 
                 defined = ""
@@ -110,8 +142,10 @@ class Parser:
                 for cc,vv in enumerate(self.tokens[count+1:]):
                     if self.tokens[count+cc+1]["type"] == TT_DEFINATION:
                         if self.tokens[count+cc+1]["value"] == self.port_func_run:
-                            if self.tokens[count+cc+1]["value"] == "main":
-                                self.tokens[count+cc+1]["value"] = "__main__"
+                            ENTRY_POINT_DEFINED = True
+
+                        if self.tokens[count+cc+1]["value"] == "main":
+                            self.tokens[count+cc+1]["value"] = "__main__"
                         
                         for ccc,vvv in enumerate(self.tokens[count+cc+1:]):
                             if vvv["type"] == TT_DEFINATION:
@@ -147,4 +181,4 @@ class Parser:
 
 
     def Get(self):
-        return [MAIN_FUNCTION_DEFINED,self.lang,imports,class_]
+        return [ENTRY_POINT_DEFINED,self.lang,imports,class_,terch_code_append]
