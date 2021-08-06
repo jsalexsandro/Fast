@@ -12,7 +12,7 @@ def debug(a="",b=""):pass
 import os,sys,shutil
 from re import T
 import libs
-from variables import GetFinalExtension, extForBuild
+from variables import GetFinalExtension, extForBuild,GetPlatform
 from langLexer import Lexer, TT_COMENT, TT_DEFINATION, TT_KEYWORD, TT_SYMBOL, TT_TYPE, types,keywords
 from langParse import Parser
 from msg import generated_code_for_insert
@@ -185,15 +185,12 @@ class Transpiler:
         with open(self.fileBuild,"wt+") as file:
             file.write(self.lang)
         
-        try:
-            os.system("g++ "+self.fileBuild +" -w -O3 -o "+self.fileBuild_Name)
-            fileNormalBuild = os.path.join(self.languagePathNormal,fileBuilded)
-            if os.path.exists(fileNormalBuild):
-                os.remove(fileNormalBuild)
-            shutil.move(self.fileBuild_Name,self.languagePathNormal)
-            os.system(f"{fileNormalBuild} {' '.join(sys.argv[2:])}")
-        except:
-            print("Erro in compilation")
+        fileNormalBuild = os.path.join(self.languagePathNormal,fileBuilded)
+        os.system("g++ "+self.fileBuild +" -w -O3 -o "+fileNormalBuild)
+        # if os.path.exists(fileNormalBuild):
+        #     os.remove(fileNormalBuild)
+        # os.system(f"{mv_move} {self.fileBuild_Name} {self.languagePathNormal}")
+        os.system(f"{fileNormalBuild} {' '.join(sys.argv[2:])}")
         # print(self.fileBuild,self.fileBuild_Name)
         # print(fileBuilded)
             # except:pass
