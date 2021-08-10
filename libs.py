@@ -21,17 +21,11 @@ input_fast = [["<iostream>","<cstring>"],r"""/*
 */
 
 template <typename T>
-char * input(T value = ""){
+std::string input(T value = ""){
 std::string s;
 std::cout<<value;
 std::getline(std::cin, s);
-char *a =new char[s.size()+1];
-a[s.size()]=0;
-std::memcpy(a,s.c_str(),s.size());
-size_t u = strlen(a);
-if (u == 0)
-    a = "";
-return a;
+return s;
 }
 """] 
 
@@ -62,32 +56,32 @@ return "null";
  * take the kind of something
 */
 template <typename any>
-char * type(any value){
-const char * __type_return;
+std::string type(any value){
+std::string __type_return;
 if (*(typeid(value).name()) == 'i' || *(typeid(value).name()) == 'l' || *(typeid(value).name()) == 'x'){
     __type_return = "int";
 } else if (*(typeid(value).name()) == 'c'){
     __type_return = "char";        
 } else if (*(typeid(value).name()) == 'P'){
-    __type_return = "string";
+    __type_return = "pointer";
 } else if (*(typeid(value).name()) == 'b'){
     __type_return = "bool";
 } else if (*(typeid(value).name()) == 'f' || *(typeid(value).name()) == 'd' || *(typeid(value).name()) == 'e'){
     __type_return = "float";
 } else {
     // std::cout << typeid(value).name() << std::endl;
-    __type_return = "std::string";
+    __type_return = "string";
 }
-return (char *)__type_return;
+return __type_return;
 }
 
 /*
  * stringToInt
  * convert string to int
 */
-long stringToInt(char * _value){
+long stringToInt(std::string _value){
 int _start = 0;
-int _end = strlen(_value);
+int _end = _value.size();
 std::string o_value;
 while (_start != _end)
 {
@@ -97,12 +91,9 @@ o_value += _value[_start];
 _start +=1;
 }
 bool convert = false;
-char *value =new char[o_value.size()+1];
-
-value[o_value.size()]=0;
-std::memcpy(value,o_value.c_str(),o_value.size());
+std::string value = o_value;
 int start = 0;
-int end = strlen(value);
+int end = value.size();
 if (end == 0){
 sendException("It is only possible to convert valid strings to int",_value,_value);
 }
@@ -143,7 +134,7 @@ start ++;
 }
 if (convert == true){
 
-long v = strtol(value, NULL, 10);
+long v = std::stoll(value,nullptr,10);
 return v;
 }  else {
 sendException("It is only possible to convert valid strings to int",_value,_value);

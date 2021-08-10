@@ -6,8 +6,8 @@
 ########################################
 
 
-def debug(a="",b=""):pass
-    # if b != "":print(a+" : "+b)
+def debug(a="",b=""):
+    if b != "":print(a+" : "+b)
 
 import os,sys,shutil
 from re import T
@@ -45,6 +45,7 @@ class Transpiler:
         if not os.path.exists(self.languagePathBuilds):
             os.mkdir(self.languagePathBuilds)
         self.lang = ""
+        self.setString = False
         for count,value in enumerate(self.values):
             typ = value[0]
             value = value[1]
@@ -55,6 +56,19 @@ class Transpiler:
             #     if self.values[count-1][1] not in {";","{","[","("}:
             #         value = ";\n"
 
+            if typ == TT_SYMBOL and value in {'"',"'"} and self.setString == False:
+                value = 'std::string("'
+                self.setString = True
+                    
+            if typ == TT_SYMBOL and value in {'"',"'"} and self.setString == True:
+                value = '")'
+                self.setString = False
+
+                # if self.setString == True:
+                #     print("terminou")
+                #     value += '")'
+                #     self.setString = False
+
             if typ == TT_SYMBOL and value == "}":
                 if self.values[count+1][1] != ";" and self.values[count+1][0] not in [TT_KEYWORD,TT_DEFINATION]:
                     value += ';'
@@ -64,12 +78,12 @@ class Transpiler:
 
             if value in types and typ == TT_TYPE:
                 if value == "string":
-                    value = "char *"
+                    value = "std::string"
                 if value == "int":
                     value = "long"
                 if value == "float":
                     value = "double"
-
+                    
                 value += " "
             
             # if value == "." and typ == TT_SYMBOL:
