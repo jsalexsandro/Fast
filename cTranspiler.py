@@ -56,7 +56,7 @@ class Transpiler:
             #         value = ";\n"
 
             if typ == TT_SYMBOL and value == "}":
-                if self.values[count+1][1] != ";":
+                if self.values[count+1][1] != ";" and self.values[count+1][0] not in [TT_KEYWORD,TT_DEFINATION]:
                     value += ';'
             
             if typ == TT_COMENT:

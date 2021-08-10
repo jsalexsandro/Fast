@@ -24,7 +24,7 @@ float_init = 0
 keywords = [
     "const","return","if","else","namespace","switch",
     "case","new","class","extends","constructor","static","public","private","protected",
-    "extern","namespace","var","while","for"
+    "extern","namespace","var","while","for","break","continue"
 ]
 
 bolleans = ["true","false"]

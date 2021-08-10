@@ -16,6 +16,7 @@ from langLexer import (
 
 from libs import (
 print_fast,
+input_fast,
 types_fast
 )
 
@@ -81,7 +82,10 @@ class Parser:
             #     elif value["name"] == symbols["\t"]:
             #         self.tokens[count]["value"] = "    "
             self.setAutomaticCodeImport(value["value"],token,"print",print_fast)
+            self.setAutomaticCodeImport(value["value"],token,"input",input_fast)
+            self.setAutomaticCodeImport(value["value"],token,"sendException",types_fast)
             self.setAutomaticCodeImport(value["value"],token,"type",types_fast)
+            self.setAutomaticCodeImport(value["value"],token,"stringToInt",types_fast)
             # if value["value"] in {"print"} and token == TT_DEFINATION:
             #     self.setNewCode(print_fast)
             #     # print("code_nw")
@@ -123,7 +127,7 @@ class Parser:
                 #             break
 
                 if value["value"] == "string":pass
-                    # self.tokens[count]["value"] = "char * "
+                    # self.setImport("<string.h>")
                         # imports.add("<string.h>")
                 
                 if value["value"] == "int":pass
