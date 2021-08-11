@@ -33,7 +33,7 @@ def Main():
         else:   
             file = variables.GetFinalExtension(argv)
             if file.endswith(".fast") and os.path.exists(argv):
-                interpreter.Interpreter(argv)
+                interpreter.Interpreter(argv).Build()
                 break
             elif not file.endswith(".fast"):
                 print(f"Extension '{'.'+file.split('.')[-1]}' not supported.")

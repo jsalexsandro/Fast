@@ -7,14 +7,22 @@
 
 from cTranspiler import Transpiler
 
+def resetSpaces(v:str):
+    return v.replace("    ","\t")
+
 class Interpreter:
     def __init__(self,file:str) -> None:
         self.fastCode = ""
         self.file = file
         with open(file,"rt",encoding="utf-8") as f:
             self.fastCode = f.read()
-            self.fastCode = self.fastCode.replace("    ","\t")
-            Transpiler(self.fastCode+"",self.file)
+            self.fastCode = resetSpaces(self.fastCode)
+            self.t = Transpiler(self.fastCode+"",self.file,False)
+
+    def Get(self):pass
+
+    def Build(self):
+        self.t.Build()
         # lexer = Lexer(self.fastCode+";")
         # tokens = lexer.Tokenize()
         # parser = Parser(tokens).Get()

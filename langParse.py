@@ -5,6 +5,11 @@
 # Github: https://github.com/eualexdev #
 ########################################
 
+def resetSpaces(v:str):
+    return v.replace("    ","\t")
+
+import os
+import cTranspiler
 from variables import GetFinalExtension
 from langLexer import (
     TT_KEYWORD,
@@ -30,6 +35,7 @@ imports = {
     "<locale.h>"
 }
 terch_code_append =set()
+imports_code = set()
 class_ = []
 
 import sys
@@ -63,6 +69,11 @@ class Parser:
         if c == ii and t == TT_DEFINATION:
             self.setNewCode(set)
 
+    def setCodeImports(self,v):
+        global imports_code
+        if (not v in imports_code):
+            imports_code.add(v)
+
     def Analitys(self): 
         global EXECUTE,ERROS,ENTRY_POINT_DEFINED,SCOPE_APPEND,imports,class_,terch_code_append
         lines = 1
@@ -90,6 +101,24 @@ class Parser:
             #     self.setNewCode(print_fast)
             #     # print("code_nw")
             #     # pass
+
+            if (value["value"] == "import" and token == TT_KEYWORD):
+                value["value"] = ""
+                fileImport = self.tokens[count+1]["value"] + ".fast"
+                self.tokens[count+1]["value"] = ""
+                if(os.path.exists(fileImport)):
+                    code = cTranspiler.Transpiler(resetSpaces(open(fileImport,"rt").read()),fileImport,True).GetValues()
+                    self.setCodeImports(code[0])
+                else:
+                    print('ERROR ARQUIVO INEXISTENTE')
+                    exit()
+                    # for i in code[1]:
+                    #     if i in imports:pass
+                    #     else:
+                    #         print(i)
+                    #         imports.add(i)
+                    # Interpreter(fileImport).Build()
+                # Interpreter()
 
             if value["value"] == "class" and token == TT_KEYWORD:
                 for cc,vv in enumerate(self.tokens[count+1:]):
@@ -185,4 +214,4 @@ class Parser:
 
 
     def Get(self):
-        return [ENTRY_POINT_DEFINED,self.lang,imports,class_,terch_code_append]
+        return [ENTRY_POINT_DEFINED,self.lang,imports,class_,terch_code_append,imports_code]

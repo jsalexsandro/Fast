@@ -19,18 +19,21 @@ from msg import generated_code_for_insert
 
 
 class Transpiler:
-    def __init__(self,code,file_) -> None:
+    def __init__(self,code,file_,module=False) -> None:
+        self.module = module
         lexer = Lexer(code+";")
         tokens = lexer.Tokenize()
         parser = Parser(tokens,file_).Get()
         entryPointExist=parser[0]
         if entryPointExist == False:
-            sys.exit( print("Entry point not defined!"))
+            if module == False:
+                sys.exit( print("Entry point not defined!"))
         file=file_
         self.values = parser[1]
         impors=parser[2]
         classed=parser[3]
         self.terch_code_apd = parser[4]
+        self.code_imports = parser[5]
         self.imports = impors
         self.commands_add = [
             # "/* using namespace std;\n */"
@@ -51,7 +54,7 @@ class Transpiler:
             value = value[1]
 
 
-            debug(typ,value)
+            # debug(typ,value)
             # if typ == TT_SYMBOL and value == "\n":
             #     if self.values[count-1][1] not in {";","{","[","("}:
             #         value = ";\n"
@@ -132,13 +135,27 @@ class Transpiler:
 
             self.lang += value
 
-        self.setMainFuncPoint()
-        self.setNewTrechCode()
-        self.setCommands()
-        self.setImports()
-        self.lang = generated_code_for_insert.replace("[file]",file) + self.lang
+        if self.module == False:
+            self.setMainFuncPoint()
+            self.setCodeImports()
+            self.setNewTrechCode()
+            self.setCommands()
+            self.setImports()
 
-        self.Build()
+        if self.module == False:   
+            self.lang = generated_code_for_insert.replace("[file]",file) + self.lang
+
+        # self.Build()
+
+
+    def GetValues(self):
+        return [self.lang,self.imports,self.terch_code_apd]
+
+    def setCodeImports(self):
+        code = ""
+        for i in self.code_imports:
+            code += i+"\n"
+        self.lang = code + self.lang
 
 
     def setMainFuncPoint(self):
