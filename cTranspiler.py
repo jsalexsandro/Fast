@@ -24,16 +24,17 @@ class Transpiler:
         lexer = Lexer(code+";")
         tokens = lexer.Tokenize()
         parser = Parser(tokens,file_).Get()
-        entryPointExist=parser[0]
+        self.isBuild = parser[0]
+        entryPointExist=parser[1]
         if entryPointExist == False:
             if module == False:
                 sys.exit( print("Entry point not defined!"))
         file=file_
-        self.values = parser[1]
-        impors=parser[2]
-        classed=parser[3]
-        self.terch_code_apd = parser[4]
-        self.code_imports = parser[5]
+        self.values = parser[2]
+        impors=parser[3]
+        classed=parser[4]
+        self.terch_code_apd = parser[5]
+        self.code_imports = parser[6]
         self.imports = impors
         self.commands_add = [
             # "/* using namespace std;\n */"
@@ -45,8 +46,8 @@ class Transpiler:
         self.languagePathNormal = os.path.join(os.getcwd(),"")
         # self.languagePathBuilds = "C:\\Users\\Alexsandro\\Desktop\\FastLanguage" + "\\run"
         self.file = file
-        if not os.path.exists(self.languagePathBuilds):
-            os.mkdir(self.languagePathBuilds)
+        # if not os.path.exists(self.languagePathBuilds):
+        #     os.mkdir(self.languagePathBuilds)
         self.lang = ""
         self.setString = False
         for count,value in enumerate(self.values):
@@ -72,6 +73,10 @@ class Transpiler:
                 #     value += '")'
                 #     self.setString = False
 
+            if typ == TT_SYMBOL and value in {";","{","["}:
+                value += "\n"
+
+
             if typ == TT_SYMBOL and value == "}":
                 if self.values[count+1][1] != ";" and self.values[count+1][0] not in [TT_KEYWORD,TT_DEFINATION]:
                     value += ';'
@@ -93,6 +98,20 @@ class Transpiler:
             #     value = "->"
 
            
+            if  value == "import" and typ == TT_KEYWORD:
+                self.values[count+1][1] = ""
+                if self.values[count+2][1] == "\n":
+                    self.values[count+2][1] = ""
+
+                if self.values[count+2][1] == ";":
+                    self.values[count+2][1] = ""
+                    if self.values[count+3][1] == "\n":
+                        self.values[count+3][1] = ""
+
+            
+
+                value = ""
+
             if value == "var" and typ == TT_KEYWORD:
                 value = "auto "
                 
@@ -144,7 +163,8 @@ class Transpiler:
 
         if self.module == False:   
             self.lang = generated_code_for_insert.replace("[file]",file) + self.lang
-
+        else:pass
+            # self.lang = """int F____LOCALE____() { setlocale(LC_ALL,"");};\nint ____LOCALE____ = F____LOCALE____(); \n""" + self.lang
         # self.Build()
 
 
@@ -207,6 +227,13 @@ class Transpiler:
     #         self.native_imports.add(local)
 
     def Build(self):  
+        if not self.isBuild == True:
+            print('Erro in Program')
+            sys.exit()
+
+        if not os.path.exists(self.languagePathBuilds):
+            os.mkdir(self.languagePathBuilds)
+
         f = GetFinalExtension(self.file.replace(".fast",".cpp"))
         
         self.fileBuild = os.path.join(self.languagePathBuilds,f"{f}")

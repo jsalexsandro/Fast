@@ -19,7 +19,7 @@ class Interpreter:
             self.fastCode = resetSpaces(self.fastCode)
             self.t = Transpiler(self.fastCode+"",self.file,False)
 
-    def Get(self):pass
+    # def Get(self):pass
 
     def Build(self):
         self.t.Build()

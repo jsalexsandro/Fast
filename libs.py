@@ -9,9 +9,10 @@
 print_fast = [["<iostream>"],r"""/*
  * Write in Terminal
 */
-template <class print_template>
-print_template print(print_template values){
+template <class printT>
+std::string print(printT values){
 std::cout << values << std::endl;
+return "null";
 };
 """]
 

@@ -136,10 +136,17 @@ class Lexer:
                         self.tokens.append(AppendToken(TT_STRING,symbols[v],value))
                     else:
                         if symbols[value] != "space" and symbols[value] != symbols["\n"]:
-                            self.tokens.append(AppendToken(TT_SYMBOL,symbols[value],value))
+                            if value == "\n":
+                                self.tokens.append(AppendToken(TT_SYMBOL,symbols[value],""))
+                            else:
+                                self.tokens.append(AppendToken(TT_SYMBOL,symbols[value],value))
+
                 else:
                     if symbols[value] != "space" and symbols[value] != symbols["\t"]:
-                        self.tokens.append(AppendToken(TT_SYMBOL,symbols[value],value))
+                        if value == "\n":
+                            self.tokens.append(AppendToken(TT_SYMBOL,symbols[value],""))
+                        else:
+                            self.tokens.append(AppendToken(TT_SYMBOL,symbols[value],value))
 
             elif value in bolleans and coment_init == 0 and float_init == 0:
                 if stringInit % 2 != 0:

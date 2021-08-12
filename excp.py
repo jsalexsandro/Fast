@@ -5,13 +5,16 @@
 # Github: https://github.com/eualexdev #
 ########################################
 
+1
+def PrintExecption(type,ins,value="",file=""):
+    if type == "ModuleNotFoundError":
+         print(f'ModuleNotFoundError in {ins} - "{value}" module not found\nFile: {file} \n')
+         return False
 
-def PrintExecption(type,ins,line,value=""):
-    if type == 'DefineError':
-        return [False,f"DefineError line {line} in '{ins}' - '{value}' value not implicit\n"]
-    if type == "ScopeError":
-         return [False,f"ScopeError in '{ins}' line {line}\n"]
-    if type == "ScopeWasDefinedError":
-         return [False,f"ScopeWasDefinedError in '{ins}' line {line}\n"]
-   
-    return False,""
+    if type == "RecursiveImportError":
+         print(f'RecursiveImportError in "{ins} {value}" cannot import the same file\nFile: {file} \n')
+         return False
+    
+    if type == "SemiColonError":
+         print(f'Error in "{ins}" Expected ";" before "{value}" \nFile: {file} \n')
+         return False

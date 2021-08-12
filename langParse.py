@@ -8,11 +8,16 @@
 def resetSpaces(v:str):
     return v.replace("    ","\t")
 
+from excp import PrintExecption
 import os
 import cTranspiler
 from variables import GetFinalExtension
 from langLexer import (
+    TT_BOOL,
+    TT_COMENT,
     TT_KEYWORD,
+    TT_NUMBER,
+    TT_STRING,
     symbols,
     TT_DEFINATION,
     TT_SYMBOL,
@@ -25,10 +30,12 @@ input_fast,
 types_fast
 )
 
+import sys
+
 SCOPE_APPEND = []
 ENTRY_POINT_DEFINED = False
 EXECUTE = True
-ERROS = ""
+fileMain = ""
 
 imports = {
     "<iostream>",
@@ -38,20 +45,20 @@ terch_code_append =set()
 imports_code = set()
 class_ = []
 
-import sys
 class Parser:
     def __init__(self,tokens = [],file="") -> None:
         self.tokens = tokens
         self.lang = []
         self.class_ = ""
         self.file = file
+        self.normalFile = GetFinalExtension(file).replace(".fast","")
         self.port_func_run = GetFinalExtension(self.file).replace(".fast","")
         self.Analitys()
         # print(class_)
         # print(SCOPE_APPEND)
-        if EXECUTE == False:
-            print(ERROS)
-            sys.exit()
+        # if EXECUTE == False:
+        #     print(ERROS)
+        #     sys.exit()
 
     def setNewCode(self,v):
         global terch_code_append
@@ -76,42 +83,83 @@ class Parser:
 
     def Analitys(self): 
         global EXECUTE,ERROS,ENTRY_POINT_DEFINED,SCOPE_APPEND,imports,class_,terch_code_append
-        lines = 1
+        lines = 0
+        countString = 0
         for count,value in enumerate(self.tokens):
             token = value["type"]
-            # if token == TT_SYMBOL:
-            #     print()
-            #     if value["name"] == symbols["\n"]:
-            #         if (
-            #             self.tokens[count-1]["value"] not in {";","{","[","("}
-            #             # and self.tokens[count+1]["name"] != "newLine"
-            #         ):
-            #             self.tokens[count]["value"] = ";\n"
-            #         lines += 1
-            #     # elif self.tokens[count-1]["value"] == ")":
-            #     #         self.tokens[count]["value"] = ");"
-            #     elif value["name"] == symbols["\t"]:
-            #         self.tokens[count]["value"] = "    "
+
+
+            if (token == TT_SYMBOL):
+                if (value["value"] in {")","]","}"}):
+                    try:
+                        if self.tokens[count+1]["value"] in {"{",")",",","+","-","*","/"}:
+                            pass
+                        elif self.tokens[count+2]["value"] == "{":pass 
+                        # elif self.tokens[count+1]["type"] in {
+                        #     TT_NUMBER,
+                        #     TT_STRING,
+                        #     TT_BOOL,
+                        #     TT_KEYWORD,
+                        #     TT_TYPE,
+                        #     TT_SYMBOL,
+                        #     TT_DEFINATION
+                        # }:pass 
+                        else :
+                            if self.tokens[count+1]["value"] != ";":
+                                EXECUTE = PrintExecption("SemiColonError",value["value"],value["value"],self.file)
+                    except:pass
+
+                if (value["value"] in {"'",'"'} and countString == 0):
+                    countString = 1
+                
+                elif (value["value"] in {"'",'"'} and countString == 1):
+                    # print("ai")
+                    if self.tokens[count+1]["value"] in {")","]",",","+","-","*","/"}:
+                        pass
+                    else:
+                        if self.tokens[count+1]["value"] != ";":
+                            EXECUTE = PrintExecption("SemiColonError",value["value"],value["value"],self.file)
+
+                    countString = 0
+                
+
+            if token == TT_NUMBER:
+                if self.tokens[count+1]["value"] in {")","]",",","+","-","*","/"}:
+                    pass
+                else:
+                    if self.tokens[count+1]["value"] != ";":
+                        EXECUTE = PrintExecption("SemiColonError",value["value"],value["value"],self.file)
+
+            if token == TT_BOOL:
+                if self.tokens[count+1]["value"] in {")","]",",","+","-","*","/"}:
+                    pass
+                else:
+                    if self.tokens[count+1]["value"] != ";":
+                        EXECUTE = PrintExecption("SemiColonError",value["value"],value["value"],self.file)
+
+
+            # COLOCA O DETECTOR DE FALTA DE ; ns TT_DEFINATION     
+            
             self.setAutomaticCodeImport(value["value"],token,"print",print_fast)
             self.setAutomaticCodeImport(value["value"],token,"input",input_fast)
             self.setAutomaticCodeImport(value["value"],token,"sendException",types_fast)
             self.setAutomaticCodeImport(value["value"],token,"type",types_fast)
             self.setAutomaticCodeImport(value["value"],token,"stringToInt",types_fast)
-            # if value["value"] in {"print"} and token == TT_DEFINATION:
-            #     self.setNewCode(print_fast)
-            #     # print("code_nw")
-            #     # pass
-
+          
             if (value["value"] == "import" and token == TT_KEYWORD):
-                value["value"] = ""
                 fileImport = self.tokens[count+1]["value"] + ".fast"
-                self.tokens[count+1]["value"] = ""
                 if(os.path.exists(fileImport)):
-                    code = cTranspiler.Transpiler(resetSpaces(open(fileImport,"rt").read()),fileImport,True).GetValues()
-                    self.setCodeImports(code[0])
+                    if self.normalFile != str(fileImport).replace(".fast",""):
+                        if self.tokens[count+2]["type"] == TT_SYMBOL and self.tokens[count+2]["value"] == ";":
+                            pass
+                        else:
+                            EXECUTE = PrintExecption("SemiColonError","import",self.tokens[count+1]["value"],self.file)
+                        code = cTranspiler.Transpiler(resetSpaces(open(fileImport,"rt").read()),fileImport,True).GetValues()
+                        self.setCodeImports(code[0])
+                    else:
+                        EXECUTE = PrintExecption("RecursiveImportError","import",self.tokens[count+1]["value"],self.file)
                 else:
-                    print('ERROR ARQUIVO INEXISTENTE')
-                    exit()
+                    EXECUTE = PrintExecption("ModuleNotFoundError",f"import",self.tokens[count+1]["value"],self.file)
                     # for i in code[1]:
                     #     if i in imports:pass
                     #     else:
@@ -131,37 +179,19 @@ class Parser:
 
                         self.class_ =  vv["value"]
                         class_.append(vv["value"])
-                        break
-
-            # if value["value"] == "function" and token == TT_KEYWORD:
-            #     for cc,vv in enumerate(self.tokens[count+1:]):
-            #         if vv["type"] == TT_DEFINATION:
-            #             if vv["value"] == "main":
-            #                 self.tokens[count+cc+1]["value"] = "__main__"
-                        
+                        break        
                 
             if value["value"] == "constructor" and token == TT_KEYWORD:
                 self.tokens[count]["value"] = self.class_
                 # self.class_ = ""
 
             if token == TT_TYPE:
-                # extern = False
-                # # cExtern = 0
-                # for cc,vv in enumerate(self.tokens[count+1:]):
-                #     c = 1
-                #     if self.tokens[cc+count-c]["type"] == TT_KEYWORD:
-                #         if (self.tokens[cc+count-c]["value"] == "extern"):
-                #             extern = True
-                #             # cExtern = cc+count-c
-                #             break
 
                 if value["value"] == "string":pass
                     # self.setImport("<string.h>")
                         # imports.add("<string.h>")
                 
                 if value["value"] == "int":pass
-                    # self.tokens[count]["value"] = "long "
-                        # imports.add("<string.h>")
 
                 if value["value"] == "bool":
                     self.setImport("<stdbool.h>")
@@ -214,4 +244,4 @@ class Parser:
 
 
     def Get(self):
-        return [ENTRY_POINT_DEFINED,self.lang,imports,class_,terch_code_append,imports_code]
+        return [EXECUTE,ENTRY_POINT_DEFINED,self.lang,imports,class_,terch_code_append,imports_code]
