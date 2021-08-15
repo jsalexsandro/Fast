@@ -21,10 +21,16 @@ stringInitedQuote = ""
 coment_init = 0
 float_init = 0
 
+keyFors = [
+    "else",
+    "catch"
+]
+
 keywords = [
     "const","return","if","else","namespace","switch",
     "case","new","class","extends","constructor","static","public","private","protected",
-    "extern","namespace","var","while","for","break","continue","import"
+    "namespace","var","while","for","break","continue","import",
+    "try","catch"
 ]
 
 bolleans = ["true","false"]

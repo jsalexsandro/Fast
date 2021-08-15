@@ -21,13 +21,15 @@ from langLexer import (
     symbols,
     TT_DEFINATION,
     TT_SYMBOL,
-    TT_TYPE
+    TT_TYPE,
+    keyFors
 )
 
 from libs import (
 print_fast,
 input_fast,
-types_fast
+types_fast,
+system_fast
 )
 
 import sys
@@ -95,6 +97,8 @@ class Parser:
                         if self.tokens[count+1]["value"] in {"{",")",",","+","-","*","/"}:
                             pass
                         elif self.tokens[count+2]["value"] == "{":pass 
+
+                        elif value["value"] == "}" and self.tokens[count+1]["type"] == TT_KEYWORD and self.tokens[count+1]["value"] in keyFors :pass
                         # elif self.tokens[count+1]["type"] in {
                         #     TT_NUMBER,
                         #     TT_STRING,
@@ -124,7 +128,7 @@ class Parser:
                 
 
             if token == TT_NUMBER:
-                if self.tokens[count+1]["value"] in {")","]",",","+","-","*","/"}:
+                if self.tokens[count+1]["value"] in {")","]",",","+","-","*","/","&","|"}:
                     pass
                 else:
                     if self.tokens[count+1]["value"] != ";":
@@ -145,6 +149,7 @@ class Parser:
             self.setAutomaticCodeImport(value["value"],token,"sendException",types_fast)
             self.setAutomaticCodeImport(value["value"],token,"type",types_fast)
             self.setAutomaticCodeImport(value["value"],token,"stringToInt",types_fast)
+            self.setAutomaticCodeImport(value["value"],token,"system",system_fast)
           
             if (value["value"] == "import" and token == TT_KEYWORD):
                 fileImport = self.tokens[count+1]["value"] + ".fast"
@@ -201,7 +206,37 @@ class Parser:
 
 
                 defined = ""
-                its = ""
+                is_variable_or_function = ""
+                name_ = ""
+                type_name_ = self.tokens[count]["value"]
+                # for cc,vv in enumerate(self.tokens[count+1:]):
+                alertExp = self.tokens[count+1]
+                if (alertExp["type"] != TT_DEFINATION):
+                    # AQUI ENTRA UM EX
+                    print("OXX uma função ou varivel precisa te um nome validp não pode ser assim")
+                    EXECUTE = False
+                else:
+                    name_ = alertExp["value"]
+
+                for cc,vv in enumerate(self.tokens[count+2:]):
+                    alertExp = self.tokens[count+2]
+                    if (alertExp["value"]) == "(":
+                        if is_variable_or_function == "":
+                            is_variable_or_function = "function"
+                            break
+
+                    elif (alertExp["value"]) == "=":
+                        if is_variable_or_function == "":
+                            is_variable_or_function = "variable"
+                            break
+
+                    elif (alertExp["value"]) == ",":
+                            is_variable_or_function = "variable"
+                            break
+                    else:
+                        is_variable_or_function = "not-detected"
+                        break
+
                 for cc,vv in enumerate(self.tokens[count+1:]):
                     if self.tokens[count+cc+1]["type"] == TT_DEFINATION:
                         if self.tokens[count+cc+1]["value"] == self.port_func_run:
@@ -216,30 +251,8 @@ class Parser:
                                     defined = [vvv["value"]][0]
                                     break
 
-
-                    for ccc,vvv in enumerate(self.tokens[count+cc+1:]):
-                        if self.tokens[count+cc+1]["value"] == "=":
-                            if its == "":
-                                its = "variable"
-                                break
-                        
-                        elif self.tokens[count+cc+1]["value"] == "(":
-                            if its == "":
-                                its = "function"
-                                break
-
-                        else:
-                            pass
-
-                #testa esse novo sistema de detecção de variaveis e funções
-                if its == "variable":
-                    pass
-
-                if its == "function":
-                    SCOPE_APPEND.append(defined)
-
-
-            # Fazer o sistema para ssbae se é um função ou variavel
+                print(is_variable_or_function+":"+name_,type_name_)
+            # Fazer o sistema para ssbae se é um função ou  variavel
             self.lang.append([self.tokens[count]["type"],self.tokens[count]["value"]])
 
 

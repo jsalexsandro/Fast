@@ -143,3 +143,9 @@ sendException("It is only possible to convert valid strings to int",_value,_valu
 }
 """
 ]
+
+system_fast = [[],"""int system(std::string values){
+int c = std::system(values.c_str());
+}
+"""
+]
