@@ -6,6 +6,7 @@
 ########################################
 
 import os
+from plotTokens import PlotTokens
 import sys
 import langhelp
 import variables
@@ -28,8 +29,25 @@ def Main():
             if not os.path.exists(ag[argc+1]):
                 with open(ag[argc+1],"wt+"):pass
             else:
-                print("Ja existe o arquivo")
+                print("File was exists")
             break
+        elif argv in {"-t","--token"}:
+            file = variables.GetFinalExtension(ag[argc+1])
+            if file.endswith(".fast") and os.path.exists(ag[argc+1]):
+                with open(ag[argc+1]) as v:
+                    PlotTokens(v.read())
+                # interpreter.Interpreter(argv).PlotTokens()
+                break
+            elif not file.endswith(".fast"):
+                print(f"Extension '{'.'+file.split('.')[-1]}' not supported.")
+                break
+            elif not os.path.exists(argv):
+                print(f"File '{ag[argc+1]}' not found.")
+                break
+            else:
+                print("We had an execution problem.")
+                break
+            
         else:   
             file = variables.GetFinalExtension(argv)
             if file.endswith(".fast") and os.path.exists(argv):

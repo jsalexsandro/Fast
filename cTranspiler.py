@@ -9,9 +9,8 @@
 def debug(a="",b=""):
     if b != "":print(a+" : "+b)
 
-import os,sys,shutil
+import os,sys
 from re import T
-import libs
 from variables import GetFinalExtension, extForBuild
 from langLexer import Lexer, TT_BOOL, TT_COMENT, TT_DEFINATION, TT_KEYWORD, TT_NUMBER, TT_STRING, TT_SYMBOL, TT_TYPE, types,keywords
 from langParse import Parser
@@ -22,8 +21,8 @@ class Transpiler:
     def __init__(self,code,file_,module=False) -> None:
         self.module = module
         lexer = Lexer(code+";")
-        tokens = lexer.Tokenize()
-        parser = Parser(tokens,file_).Get()
+        self.tokens = lexer.Tokenize()
+        parser = Parser(self.tokens,file_).Get()
         self.isBuild = parser[0]
         entryPointExist=parser[1]
         if entryPointExist == False:
@@ -41,6 +40,7 @@ class Transpiler:
             "char ** argv;\n"
         ]
         self.implemenst = {"{",")",",",";","|","&","+"}
+        self.no_ = {"else"}
         self.native_imports = set()
         # self.languagePathBuilds = os.path.join("\ "[0].join([i for i in sys.argv[0].split("\\")[0:-1]]),"run")
         self.languagePathBuilds = os.path.join(os.getcwd(),"run")
@@ -85,6 +85,7 @@ class Transpiler:
                 if (value in {")","]","}"}):
                     if (
                         self.values[count+1][1] not in self.implemenst
+                        and self.values[count+1][1] not in self.no_
                         # and self.values[count+2][1] != "{"
                     ): 
                         value += ";\n"
@@ -195,8 +196,7 @@ class Transpiler:
         else:pass
             # self.lang = """int F____LOCALE____() { setlocale(LC_ALL,"");};\nint ____LOCALE____ = F____LOCALE____(); \n""" + self.lang
         # self.Build()
-
-
+      
     def GetValues(self):
         return [self.lang,self.imports,self.terch_code_apd]
 
@@ -221,7 +221,6 @@ class Transpiler:
         ]
 
         for i in codeMain:self.lang += i
-
 
     def setCommands(self):
         code = ""

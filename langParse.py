@@ -186,6 +186,12 @@ class Parser:
                 # Interpreter()
 
             if value["value"] == "class" and token == TT_KEYWORD:
+                alertExp = self.tokens[count+1]
+                if (alertExp["type"] != TT_DEFINATION):
+                    if self.tokens[count+2]["type"] != TT_DEFINATION:
+                        EXECUTE = PrintExecption("NameError","class",alertExp["value"],self.file)
+                        break
+
                 for cc,vv in enumerate(self.tokens[count+1:]):
                     if vv["type"] == TT_DEFINATION:
                         if vv["value"] == self.port_func_run:
@@ -226,8 +232,8 @@ class Parser:
                 if (alertExp["type"] != TT_DEFINATION):
                     # AQUI ENTRA UM EX
                     if self.tokens[count+2]["type"] != TT_DEFINATION:
-                        print("OXX uma função ou varivel precisa te um nome validp não pode ser assim")
-                        EXECUTE = False
+                        EXECUTE = PrintExecption("NameError",type_name_,alertExp["value"],self.file)
+                        break
                     else:
                         name_ = self.tokens[count+2]["value"]
 

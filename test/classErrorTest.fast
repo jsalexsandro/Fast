@@ -1,0 +1,5 @@
+class classErrorTest {
+    public constructor(){
+        print("Test")
+    }
+}

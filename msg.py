@@ -1,6 +1,5 @@
 from variables import langName,langVersion
 from datetime import datetime
-
 days = [
     "Monday",
     "Tuesday",

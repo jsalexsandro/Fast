@@ -18,3 +18,7 @@ def PrintExecption(type,ins,value="",file=""):
     if type == "SemiColonError":
          print(f'Error in "{ins}" Expected ";" before "{value}" \nFile: {file} \n')
          return False
+
+    if type == "NameError":
+         print(f'Error in "{ins}" Define a valid name for a class, function, or variable "{value}" is not a valid name\nFile: {file} \n')
+         return False

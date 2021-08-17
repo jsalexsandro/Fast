@@ -2,3 +2,4 @@ __pycache__/*
 fast.bat
 run/*
 teste.py
+test/run/*.exe
