@@ -13,7 +13,7 @@ import os,sys,shutil
 from re import T
 import libs
 from variables import GetFinalExtension, extForBuild
-from langLexer import Lexer, TT_COMENT, TT_DEFINATION, TT_KEYWORD, TT_SYMBOL, TT_TYPE, types,keywords
+from langLexer import Lexer, TT_BOOL, TT_COMENT, TT_DEFINATION, TT_KEYWORD, TT_NUMBER, TT_STRING, TT_SYMBOL, TT_TYPE, types,keywords
 from langParse import Parser
 from msg import generated_code_for_insert
 
@@ -40,6 +40,7 @@ class Transpiler:
             # "/* using namespace std;\n */"
             "char ** argv;\n"
         ]
+        self.implemenst = {"{",")",",",";","|","&","+"}
         self.native_imports = set()
         # self.languagePathBuilds = os.path.join("\ "[0].join([i for i in sys.argv[0].split("\\")[0:-1]]),"run")
         self.languagePathBuilds = os.path.join(os.getcwd(),"run")
@@ -50,6 +51,7 @@ class Transpiler:
         #     os.mkdir(self.languagePathBuilds)
         self.lang = ""
         self.setString = False
+        self.countString = 0
         for count,value in enumerate(self.values):
             typ = value[0]
             value = value[1]
@@ -65,21 +67,50 @@ class Transpiler:
                 self.setString = True
                     
             if typ == TT_SYMBOL and value in {'"',"'"} and self.setString == True:
-                value = '")'
-                self.setString = False
+                value = '")'           
+                if (
+                    self.values[count+1][1] not in self.implemenst
+                    # and self.values[count+2][1] != ")"
 
-                # if self.setString == True:
-                #     print("terminou")
-                #     value += '")'
-                #     self.setString = False
+                ):
+                    value += ";\n"          
+
+                self.setString = False
 
             if typ == TT_SYMBOL and value in {";","{","["}:
                 value += "\n"
 
+                
+            if typ == TT_SYMBOL:
+                if (value in {")","]","}"}):
+                    if (
+                        self.values[count+1][1] not in self.implemenst
+                        # and self.values[count+2][1] != "{"
+                    ): 
+                        value += ";\n"
 
-            if typ == TT_SYMBOL and value == "}":
-                if self.values[count+1][1] != ";" and self.values[count+1][0] not in [TT_KEYWORD,TT_DEFINATION]:
-                    value += ';'
+            if typ == TT_NUMBER:
+                if (
+                    self.values[count+1][1] not in self.implemenst 
+                    # and self.values[count+2][1] != ")"
+                ): 
+                    value += ";\n"
+                
+            if typ == TT_BOOL:
+                if (
+                    self.values[count+1][1] not in self.implemenst
+                    # and self.values[count+2][1] != ")"
+                ): 
+                    value += ";\n"
+                
+                # else:
+                #     # if self.values[count+1][1] != ";":
+                #     value += ";\n"
+
+                # if self.values[count+1]
+                # value += ";\n"
+                # pass
+
             
             if typ == TT_COMENT:
                 value = ""
@@ -107,8 +138,6 @@ class Transpiler:
                     self.values[count+2][1] = ""
                     if self.values[count+3][1] == "\n":
                         self.values[count+3][1] = ""
-
-            
 
                 value = ""
 

@@ -88,59 +88,65 @@ class Parser:
         lines = 0
         countString = 0
         for count,value in enumerate(self.tokens):
+            isAppend = True
             token = value["type"]
 
 
-            if (token == TT_SYMBOL):
-                if (value["value"] in {")","]","}"}):
-                    try:
-                        if self.tokens[count+1]["value"] in {"{",")",",","+","-","*","/"}:
-                            pass
-                        elif self.tokens[count+2]["value"] == "{":pass 
+            # if (token == TT_SYMBOL):
+            #     if (value["value"] in {")","]","}"}):
+            #         try:
+            #             if self.tokens[count+1]["value"] in {"{",")",",","+","-","*","/"}:
+            #                 pass
+            #             elif self.tokens[count+2]["value"] == "{":pass 
 
-                        elif value["value"] == "}" and self.tokens[count+1]["type"] == TT_KEYWORD and self.tokens[count+1]["value"] in keyFors :pass
-                        # elif self.tokens[count+1]["type"] in {
-                        #     TT_NUMBER,
-                        #     TT_STRING,
-                        #     TT_BOOL,
-                        #     TT_KEYWORD,
-                        #     TT_TYPE,
-                        #     TT_SYMBOL,
-                        #     TT_DEFINATION
-                        # }:pass 
-                        else :
-                            if self.tokens[count+1]["value"] != ";":
-                                EXECUTE = PrintExecption("SemiColonError",value["value"],value["value"],self.file)
-                    except:pass
+            #             elif value["value"] == "}" and self.tokens[count+1]["type"] == TT_KEYWORD and self.tokens[count+1]["value"] in keyFors :pass
+            #             # elif self.tokens[count+1]["type"] in {
+            #             #     TT_NUMBER,
+            #             #     TT_STRING,
+            #             #     TT_BOOL,
+            #             #     TT_KEYWORD,
+            #             #     TT_TYPE,
+            #             #     TT_SYMBOL,
+            #             #     TT_DEFINATION
+            #             # }:pass 
+            #             else :
+            #                 if self.tokens[count+1]["value"] != ";":
+            #                     EXECUTE = PrintExecption("SemiColonError",value["value"],value["value"],self.file)
+            #         except:pass
 
-                if (value["value"] in {"'",'"'} and countString == 0):
-                    countString = 1
+            #     if (value["value"] in {"'",'"'} and countString == 0):
+            #         countString = 1
                 
-                elif (value["value"] in {"'",'"'} and countString == 1):
-                    # print("ai")
-                    if self.tokens[count+1]["value"] in {")","]",",","+","-","*","/"}:
-                        pass
-                    else:
-                        if self.tokens[count+1]["value"] != ";":
-                            EXECUTE = PrintExecption("SemiColonError",value["value"],value["value"],self.file)
+            #     elif (value["value"] in {"'",'"'} and countString == 1):
+            #         # print("ai")
+            #         if self.tokens[count+1]["value"] in {")","]",",","+","-","*","/"}:
+            #             pass
+            #         else:
+            #             if self.tokens[count+1]["value"] != ";":
+            #                 EXECUTE = PrintExecption("SemiColonError",value["value"],value["value"],self.file)
 
-                    countString = 0
+            #         countString = 0
                 
 
-            if token == TT_NUMBER:
-                if self.tokens[count+1]["value"] in {")","]",",","+","-","*","/","&","|"}:
-                    pass
-                else:
-                    if self.tokens[count+1]["value"] != ";":
-                        EXECUTE = PrintExecption("SemiColonError",value["value"],value["value"],self.file)
+            # if token == TT_NUMBER:
+            #     if self.tokens[count+1]["value"] in {")","]",",","+","-","*","/","&","|"}:
+            #         pass
+            #     else:
+            #         if self.tokens[count+1]["value"] != ";":
+            #             EXECUTE = PrintExecption("SemiColonError",value["value"],value["value"],self.file)
 
-            if token == TT_BOOL:
-                if self.tokens[count+1]["value"] in {")","]",",","+","-","*","/"}:
-                    pass
-                else:
-                    if self.tokens[count+1]["value"] != ";":
-                        EXECUTE = PrintExecption("SemiColonError",value["value"],value["value"],self.file)
+            # if token == TT_BOOL:
+            #     if self.tokens[count+1]["value"] in {")","]",",","+","-","*","/"}:
+            #         pass
+            #     else:
+            #         if self.tokens[count+1]["value"] != ";":
+            #             EXECUTE = PrintExecption("SemiColonError",value["value"],value["value"],self.file)
 
+            if token == TT_SYMBOL:
+                if self.tokens[count]["name"] == "newLine":
+                    isAppend = False
+
+            # FAZER OS OUTROS TESTES
 
             # COLOCA O DETECTOR DE FALTA DE ; ns TT_DEFINATION     
             
@@ -152,19 +158,25 @@ class Parser:
             self.setAutomaticCodeImport(value["value"],token,"system",system_fast)
           
             if (value["value"] == "import" and token == TT_KEYWORD):
-                fileImport = self.tokens[count+1]["value"] + ".fast"
+                fileImport = ""
+                if (self.tokens[count+1]["type"] == TT_DEFINATION):
+                    fileImport = self.tokens[count+1]["value"] + ".fast"
+                else: 
+                    if (self.tokens[count+2]["type"] == TT_DEFINATION):
+                        fileImport = self.tokens[count+2]["value"] + ".fast"
+
                 if(os.path.exists(fileImport)):
                     if self.normalFile != str(fileImport).replace(".fast",""):
-                        if self.tokens[count+2]["type"] == TT_SYMBOL and self.tokens[count+2]["value"] == ";":
-                            pass
-                        else:
-                            EXECUTE = PrintExecption("SemiColonError","import",self.tokens[count+1]["value"],self.file)
+                        # if self.tokens[count+2]["type"] == TT_SYMBOL and self.tokens[count+2]["value"] == ";":
+                        #     pass
+                        # else:
+                        #     EXECUTE = PrintExecption("SemiColonError","import",self.tokens[count+1]["value"],self.file)
                         code = cTranspiler.Transpiler(resetSpaces(open(fileImport,"rt").read()),fileImport,True).GetValues()
                         self.setCodeImports(code[0])
                     else:
-                        EXECUTE = PrintExecption("RecursiveImportError","import",self.tokens[count+1]["value"],self.file)
+                        EXECUTE = PrintExecption("RecursiveImportError","import",fileImport,self.file)
                 else:
-                    EXECUTE = PrintExecption("ModuleNotFoundError",f"import",self.tokens[count+1]["value"],self.file)
+                    EXECUTE = PrintExecption("ModuleNotFoundError",f"import",fileImport,self.file)
                     # for i in code[1]:
                     #     if i in imports:pass
                     #     else:
@@ -213,8 +225,12 @@ class Parser:
                 alertExp = self.tokens[count+1]
                 if (alertExp["type"] != TT_DEFINATION):
                     # AQUI ENTRA UM EX
-                    print("OXX uma função ou varivel precisa te um nome validp não pode ser assim")
-                    EXECUTE = False
+                    if self.tokens[count+2]["type"] != TT_DEFINATION:
+                        print("OXX uma função ou varivel precisa te um nome validp não pode ser assim")
+                        EXECUTE = False
+                    else:
+                        name_ = self.tokens[count+2]["value"]
+
                 else:
                     name_ = alertExp["value"]
 
@@ -251,9 +267,10 @@ class Parser:
                                     defined = [vvv["value"]][0]
                                     break
 
-                print(is_variable_or_function+":"+name_,type_name_)
+                # print(is_variable_or_function+":"+name_,type_name_)
             # Fazer o sistema para ssbae se é um função ou  variavel
-            self.lang.append([self.tokens[count]["type"],self.tokens[count]["value"]])
+            if isAppend == True:
+                self.lang.append([self.tokens[count]["type"],self.tokens[count]["value"]])
 
 
     def Get(self):
