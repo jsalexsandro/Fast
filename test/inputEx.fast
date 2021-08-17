@@ -1,0 +1,6 @@
+class inputEx{
+    public constructor(){
+        string value = input("? ") // -> STRING
+        print(value)
+    }
+}
