@@ -3,3 +3,8 @@ class classErrorTest {
         print("Test")
     }
 }
+
+int 32(){
+ // ^^ SYNTAX ERROR 
+
+}
