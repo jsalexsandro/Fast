@@ -15,6 +15,7 @@ TT_KEYWORD = "KEYWORD"
 TT_TYPE = "TYPE"
 TT_SYMBOL = "SYMBOL"
 TT_DEFINATION = "DEFINATION"
+TT_OPERATOR = "OPERATOR"
 
 stringInit = 0
 stringInitedQuote = ""
@@ -159,6 +160,12 @@ class Lexer:
                     self.tokens.append(AppendToken(TT_STRING,value,value))
                 else:
                     self.tokens.append(AppendToken(TT_BOOL,value,value))
+            
+            elif value in operators and coment_init == 0 and float_init == 0:
+                if stringInit % 2 != 0:
+                    self.tokens.append(AppendToken(TT_STRING,value,value))
+                else:
+                    self.tokens.append(AppendToken(TT_OPERATOR,value,value))
             else:
 
                 # Set String

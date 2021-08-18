@@ -17,7 +17,7 @@ class Interpreter:
         with open(file,"rt",encoding="utf-8") as f:
             self.fastCode = f.read()
             self.fastCode = resetSpaces(self.fastCode)
-            self.t = Transpiler(self.fastCode+"",self.file,False)
+            self.t = Transpiler(self.fastCode,self.file,False)
 
     # def Get(self):pass
 

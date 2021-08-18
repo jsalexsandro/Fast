@@ -17,6 +17,7 @@ from langLexer import (
     TT_COMENT,
     TT_KEYWORD,
     TT_NUMBER,
+    TT_OPERATOR,
     TT_STRING,
     symbols,
     TT_DEFINATION,
@@ -46,6 +47,11 @@ imports = {
 terch_code_append =set()
 imports_code = set()
 class_ = []
+SCOPE = []
+scope = []
+typeScope = []
+isScope = []
+blockCommandCount = 0
 
 class Parser:
     def __init__(self,tokens = [],file="") -> None:
@@ -69,6 +75,11 @@ class Parser:
         if not v[1] in terch_code_append:
             terch_code_append.add(v[1])
 
+    def AddNewScope(self,c):
+        global SCOPE
+        if not c in SCOPE:
+            SCOPE.append(c)
+
     def setImport(self,c):
         global imports
         if (not c in imports):
@@ -77,82 +88,31 @@ class Parser:
     def setAutomaticCodeImport(self,c,t,ii,set):
         if c == ii and t == TT_DEFINATION:
             self.setNewCode(set)
+            self.AddNewScope(ii)
 
     def setCodeImports(self,v):
         global imports_code
         if (not v in imports_code):
             imports_code.add(v)
 
+
     def Analitys(self): 
-        global EXECUTE,ERROS,ENTRY_POINT_DEFINED,SCOPE_APPEND,imports,class_,terch_code_append
-        lines = 0
-        countString = 0
+        global EXECUTE,ERROS,ENTRY_POINT_DEFINED,SCOPE,imports,class_,terch_code_append
+        global scope,isScope,typeScope,blockCommandCount
+        # lines = 0
+        # countString = 0
+        self.scopeName = ""
+        
         for count,value in enumerate(self.tokens):
             isAppend = True
             token = value["type"]
-
-
-            # if (token == TT_SYMBOL):
-            #     if (value["value"] in {")","]","}"}):
-            #         try:
-            #             if self.tokens[count+1]["value"] in {"{",")",",","+","-","*","/"}:
-            #                 pass
-            #             elif self.tokens[count+2]["value"] == "{":pass 
-
-            #             elif value["value"] == "}" and self.tokens[count+1]["type"] == TT_KEYWORD and self.tokens[count+1]["value"] in keyFors :pass
-            #             # elif self.tokens[count+1]["type"] in {
-            #             #     TT_NUMBER,
-            #             #     TT_STRING,
-            #             #     TT_BOOL,
-            #             #     TT_KEYWORD,
-            #             #     TT_TYPE,
-            #             #     TT_SYMBOL,
-            #             #     TT_DEFINATION
-            #             # }:pass 
-            #             else :
-            #                 if self.tokens[count+1]["value"] != ";":
-            #                     EXECUTE = PrintExecption("SemiColonError",value["value"],value["value"],self.file)
-            #         except:pass
-
-            #     if (value["value"] in {"'",'"'} and countString == 0):
-            #         countString = 1
-                
-            #     elif (value["value"] in {"'",'"'} and countString == 1):
-            #         # print("ai")
-            #         if self.tokens[count+1]["value"] in {")","]",",","+","-","*","/"}:
-            #             pass
-            #         else:
-            #             if self.tokens[count+1]["value"] != ";":
-            #                 EXECUTE = PrintExecption("SemiColonError",value["value"],value["value"],self.file)
-
-            #         countString = 0
-                
-
-            # if token == TT_NUMBER:
-            #     if self.tokens[count+1]["value"] in {")","]",",","+","-","*","/","&","|"}:
-            #         pass
-            #     else:
-            #         if self.tokens[count+1]["value"] != ";":
-            #             EXECUTE = PrintExecption("SemiColonError",value["value"],value["value"],self.file)
-
-            # if token == TT_BOOL:
-            #     if self.tokens[count+1]["value"] in {")","]",",","+","-","*","/"}:
-            #         pass
-            #     else:
-            #         if self.tokens[count+1]["value"] != ";":
-            #             EXECUTE = PrintExecption("SemiColonError",value["value"],value["value"],self.file)
-
             if token == TT_SYMBOL:
                 if self.tokens[count]["name"] == "newLine":
                     isAppend = False
 
-            # FAZER OS OUTROS TESTES
-
-            # COLOCA O DETECTOR DE FALTA DE ; ns TT_DEFINATION     
-            
             self.setAutomaticCodeImport(value["value"],token,"print",print_fast)
             self.setAutomaticCodeImport(value["value"],token,"input",input_fast)
-            self.setAutomaticCodeImport(value["value"],token,"sendException",types_fast)
+            # self.setAutomaticCodeImport(value["value"],token,"sendException",types_fast)
             self.setAutomaticCodeImport(value["value"],token,"type",types_fast)
             self.setAutomaticCodeImport(value["value"],token,"stringToInt",types_fast)
             self.setAutomaticCodeImport(value["value"],token,"system",system_fast)
@@ -185,11 +145,38 @@ class Parser:
                     # Interpreter(fileImport).Build()
                 # Interpreter()
 
+            if token == TT_DEFINATION:
+                if self.tokens[count-1]["type"] == TT_TYPE or self.tokens[count-1]["type"] == TT_KEYWORD and self.tokens[count-1]["value"] in {'class','import'} or self.tokens[count-1]["type"] == TT_DEFINATION and self.tokens[count-1]["value"] in class_:
+                    pass
+                else:
+                    if value["value"] not in scope:
+                        if not value["value"] in SCOPE:
+                            # print(f"{value['value']} not Defined")
+                            EXECUTE = PrintExecption("NameError",value["value"],value["value"],self.file)
+                        # print(self.typeScope[scope.index(value["value"])])
+                        # print(se)
+                        # pass
+                        # print(value["value"])
+
+            if token == TT_SYMBOL:
+                if (value["value"] == "{"):
+                    blockCommandCount += 1
+                if (value["value"] == "}"):
+                    if blockCommandCount == 1:
+                        scope.clear()
+                        typeScope.clear()
+                        isScope.clear()
+                        self.scopeName = ""
+                        blockCommandCount = 0
+                    else:
+                        blockCommandCount -= 1
+                    # print(self.tokens[count+1]["value"],self.tokens[count+1]["type"],self.tokens[count+1]["name"])
+
             if value["value"] == "class" and token == TT_KEYWORD:
                 alertExp = self.tokens[count+1]
                 if (alertExp["type"] != TT_DEFINATION):
                     if self.tokens[count+2]["type"] != TT_DEFINATION:
-                        EXECUTE = PrintExecption("NameError","class",alertExp["value"],self.file)
+                        EXECUTE = PrintExecption("SyntaxError","class",alertExp["value"],self.file)
                         break
 
                 for cc,vv in enumerate(self.tokens[count+1:]):
@@ -202,6 +189,9 @@ class Parser:
 
                         self.class_ =  vv["value"]
                         class_.append(vv["value"])
+                        scope.append(vv["value"])
+                        typeScope.append("class")
+                        isScope.append("class")
                         break        
                 
             if value["value"] == "constructor" and token == TT_KEYWORD:
@@ -232,7 +222,7 @@ class Parser:
                 if (alertExp["type"] != TT_DEFINATION):
                     # AQUI ENTRA UM EX
                     if self.tokens[count+2]["type"] != TT_DEFINATION:
-                        EXECUTE = PrintExecption("NameError",type_name_,alertExp["value"],self.file)
+                        EXECUTE = PrintExecption("SyntaxError",type_name_,alertExp["value"],self.file)
                         break
                     else:
                         name_ = self.tokens[count+2]["value"]
@@ -273,11 +263,20 @@ class Parser:
                                     defined = [vvv["value"]][0]
                                     break
 
+                if is_variable_or_function == "function":
+                    if self.scopeName == "":
+                        self.scopeName = name_        
+                        SCOPE.append(name_)
+            
+                if self.scopeName != "":
+                    scope.append(name_)
+                    typeScope.append(type_name_)
+                    isScope.append(is_variable_or_function)
                 # print(is_variable_or_function+":"+name_,type_name_)
-            # Fazer o sistema para ssbae se é um função ou  variavel
             if isAppend == True:
                 self.lang.append([self.tokens[count]["type"],self.tokens[count]["value"]])
 
 
     def Get(self):
+        # print(scope)
         return [EXECUTE,ENTRY_POINT_DEFINED,self.lang,imports,class_,terch_code_append,imports_code]

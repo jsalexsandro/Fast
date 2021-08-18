@@ -12,7 +12,19 @@ def debug(a="",b=""):
 import os,sys
 from re import T
 from variables import GetFinalExtension, extForBuild
-from langLexer import Lexer, TT_BOOL, TT_COMENT, TT_DEFINATION, TT_KEYWORD, TT_NUMBER, TT_STRING, TT_SYMBOL, TT_TYPE, types,keywords
+from langLexer import (Lexer,
+TT_BOOL, 
+TT_COMENT,
+TT_DEFINATION, 
+TT_KEYWORD, 
+TT_NUMBER, 
+TT_OPERATOR, 
+TT_STRING, 
+TT_SYMBOL,
+TT_TYPE, 
+TT_OPERATOR,
+types
+,keywords)
 from langParse import Parser
 from msg import generated_code_for_insert
 
@@ -20,7 +32,7 @@ from msg import generated_code_for_insert
 class Transpiler:
     def __init__(self,code,file_,module=False) -> None:
         self.module = module
-        lexer = Lexer(code+";")
+        lexer = Lexer(code+"\n")
         self.tokens = lexer.Tokenize()
         parser = Parser(self.tokens,file_).Get()
         self.isBuild = parser[0]
@@ -80,19 +92,20 @@ class Transpiler:
             if typ == TT_SYMBOL and value in {";","{","["}:
                 value += "\n"
 
-                
-            if typ == TT_SYMBOL:
-                if (value in {")","]","}"}):
-                    if (
-                        self.values[count+1][1] not in self.implemenst
-                        and self.values[count+1][1] not in self.no_
-                        # and self.values[count+2][1] != "{"
-                    ): 
-                        value += ";\n"
-
+            try:
+                if typ == TT_SYMBOL:
+                    if (value in {")","]","}"}):
+                        if (
+                            self.values[count+1][1] not in self.implemenst
+                            and self.values[count+1][1] not in self.no_
+                            # and self.values[count+2][1] != "{"
+                        ): 
+                            value += ";\n"
+            except:pass
             if typ == TT_NUMBER:
                 if (
-                    self.values[count+1][1] not in self.implemenst 
+                    self.values[count+1][1] not in self.implemenst and
+                    self.values[count+1][0] != TT_OPERATOR
                     # and self.values[count+2][1] != ")"
                 ): 
                     value += ";\n"
@@ -104,6 +117,16 @@ class Transpiler:
                 ): 
                     value += ";\n"
                 
+            # if typ == TT_OPERATOR:
+            #     if (
+            #         self.values[count+1][1] not in self.implemenst and
+
+                    
+            #             # and self.values[count+2][1] != ")"
+            #     ): 
+                    
+            #         value += ";\n"
+            
                 # else:
                 #     # if self.values[count+1][1] != ";":
                 #     value += ";\n"

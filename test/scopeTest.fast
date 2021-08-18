@@ -1,0 +1,9 @@
+int test(){
+    int number = 10
+}
+
+int scopeTest(){
+    // int number = 10
+    print(number)
+    //    ^^^^^^ "number" has not been defined
+}
