@@ -1,9 +1,9 @@
-########################################
-# The Cli for "Fast" Language !        #
-########################################
-# Coding By José Alexsandro            #
-# Github: https://github.com/eualexdev #
-########################################
+###########################################
+# The Cli for "Fast" Language !           #
+###########################################
+# Coding By José Alexsandro               #
+# Github: https://github.com/jsalexsandro #
+###########################################
 
 import os
 from plotTokens import PlotTokens

@@ -1,9 +1,9 @@
-########################################
-# Lexer and Parser connector.          #
-########################################
-# Coding By José Alexsandro            #
-# Github: https://github.com/eualexdev #
-########################################
+###########################################
+# Lexer and Parser connector.             #
+###########################################
+# Coding By José Alexsandro               #
+# Github: https://github.com/jsalexsandro #
+###########################################
 
 from cTranspiler import Transpiler
 

@@ -1,9 +1,9 @@
-########################################
-# The Lexer for "Fast" Language !      #
-########################################
-# Coding By José Alexsandro            #
-# Github: https://github.com/eualexdev #
-########################################
+###########################################
+# The Lexer for "Fast" Language !         #
+###########################################
+# Coding By José Alexsandro               #
+# Github: https://github.com/jsalexsandro #
+###########################################
 
 import re
 

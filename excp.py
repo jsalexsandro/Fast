@@ -1,9 +1,9 @@
-########################################
-# Excptions for "Fast" Language !      #
-########################################
-# Coding By José Alexsandro            #
-# Github: https://github.com/eualexdev #
-########################################
+###########################################
+# Excptions for "Fast" Language           #
+###########################################
+# Coding By José Alexsandro               #
+# Github: https://github.com/jsalexsandro #
+###########################################
 
 1
 def PrintException(type,ins,value="",file="",line=1):

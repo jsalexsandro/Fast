@@ -1,9 +1,9 @@
-########################################
-# Lins for "Fast" Language !           #
-########################################
-# Coding By José Alexsandro            #
-# Github: https://github.com/eualexdev #
-########################################
+###########################################
+# Libs for "Fast" Language !              #
+###########################################
+# Coding By José Alexsandro               #
+# Github: https://github.com/jsalexsandro #
+###########################################
 
 
 print_fast = [["<iostream>"],r"""/*

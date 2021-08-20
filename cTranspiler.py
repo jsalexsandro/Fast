@@ -1,9 +1,9 @@
-########################################
-# CPP Tranpiler for "Fast" Language !  #
-########################################
-# Coding By José Alexsandro            #
-# Github: https://github.com/eualexdev #
-########################################
+###########################################
+# CPP Tranpiler for "Fast" Language !     #
+###########################################
+# Coding By José Alexsandro               #
+# Github: https://github.com/jsalexsandro #
+###########################################
 
 
 def debug(a="",b=""):

@@ -1,9 +1,9 @@
-########################################
-# The Parse for "Fast" Language !      #
-########################################
-# Coding By José Alexsandro            #
-# Github: https://github.com/eualexdev #
-########################################
+###########################################
+# The Parse for "Fast" Language !         #
+###########################################
+# Coding By José Alexsandro               #
+# Github: https://github.com/jsalexsandro #
+###########################################
 
 def resetSpaces(v:str):
     return v.replace("    ","\t")

@@ -1,3 +1,11 @@
+###########################################
+# Tokens user View  for Fast Language     #
+###########################################
+# Coding By José Alexsandro               #
+# Github: https://github.com/jsalexsandro #
+###########################################
+
+
 import langLexer
 
 def PlotTokens(code):

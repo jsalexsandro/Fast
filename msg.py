@@ -1,5 +1,14 @@
+###########################################
+# Message Generator for Fast Langugage    #
+###########################################
+# Coding By José Alexsandro               #
+# Github: https://github.com/jsalexsandro #
+###########################################
+
+
 from variables import langName,langVersion
 from datetime import datetime
+
 days = [
     "Monday",
     "Tuesday",
