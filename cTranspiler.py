@@ -155,13 +155,13 @@ class Transpiler:
            
             if  value == "import" and typ == TT_KEYWORD:
                 self.values[count+1][1] = ""
-                if self.values[count+2][1] == "\n":
-                    self.values[count+2][1] = ""
+                # if self.values[count+2][1] == "\n":
+                #     self.values[count+2][1] = ""
 
-                if self.values[count+2][1] == ";":
-                    self.values[count+2][1] = ""
-                    if self.values[count+3][1] == "\n":
-                        self.values[count+3][1] = ""
+                # if self.values[count+2][1] == ";":
+                #     self.values[count+2][1] = ""
+                #     if self.values[count+3][1] == "\n":
+                #         self.values[count+3][1] = ""
 
                 value = ""
 

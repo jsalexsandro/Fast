@@ -8,7 +8,7 @@
 def resetSpaces(v:str):
     return v.replace("    ","\t")
 
-from excp import PrintExecption
+from excp import PrintException
 import os
 import cTranspiler
 from variables import GetFinalExtension
@@ -47,11 +47,15 @@ imports = {
 terch_code_append =set()
 imports_code = set()
 class_ = []
-SCOPE = []
-scope = []
-typeScope = []
-isScope = []
-blockCommandCount = 0
+SCOPE = {
+    "GLOBAL":{},
+    "NOGLOBAL":{
+
+    }
+}
+SCOPE_NAMES = [
+    
+]
 
 class Parser:
     def __init__(self,tokens = [],file="") -> None:
@@ -77,9 +81,13 @@ class Parser:
 
     def AddNewScope(self,c):
         global SCOPE
-        if not c in SCOPE:
-            SCOPE.append(c)
-
+        try:
+            if not c in SCOPE["GLOBAL"][c]:
+                SCOPE["GLOBAL"][c] = []
+            # pass
+        except:
+            SCOPE["GLOBAL"][c] = []
+    
     def setImport(self,c):
         global imports
         if (not c in imports):
@@ -98,16 +106,16 @@ class Parser:
 
     def Analitys(self): 
         global EXECUTE,ERROS,ENTRY_POINT_DEFINED,SCOPE,imports,class_,terch_code_append
-        global scope,isScope,typeScope,blockCommandCount
-        # lines = 0
-        # countString = 0
-        self.scopeName = ""
+        self.nameScope = []
+        self.countScope = -1
+        self.lines = 1
         
         for count,value in enumerate(self.tokens):
             isAppend = True
             token = value["type"]
             if token == TT_SYMBOL:
                 if self.tokens[count]["name"] == "newLine":
+                    self.lines += 1
                     isAppend = False
 
             self.setAutomaticCodeImport(value["value"],token,"print",print_fast)
@@ -121,7 +129,7 @@ class Parser:
                 fileImport = ""
                 if (self.tokens[count+1]["type"] == TT_DEFINATION):
                     fileImport = self.tokens[count+1]["value"] + ".fast"
-                else: 
+                else:
                     if (self.tokens[count+2]["type"] == TT_DEFINATION):
                         fileImport = self.tokens[count+2]["value"] + ".fast"
 
@@ -130,53 +138,40 @@ class Parser:
                         # if self.tokens[count+2]["type"] == TT_SYMBOL and self.tokens[count+2]["value"] == ";":
                         #     pass
                         # else:
-                        #     EXECUTE = PrintExecption("SemiColonError","import",self.tokens[count+1]["value"],self.file)
+                        #     EXECUTE = PrintException("SemiColonError","import",self.tokens[count+1]["value"],self.file)
                         code = cTranspiler.Transpiler(resetSpaces(open(fileImport,"rt").read()),fileImport,True).GetValues()
                         self.setCodeImports(code[0])
                     else:
-                        EXECUTE = PrintExecption("RecursiveImportError","import",fileImport,self.file)
+                        EXECUTE = PrintException("RecursiveImportError",f"import",fileImport,self.file,self.lines)
                 else:
-                    EXECUTE = PrintExecption("ModuleNotFoundError",f"import",fileImport,self.file)
-                    # for i in code[1]:
-                    #     if i in imports:pass
-                    #     else:
-                    #         print(i)
-                    #         imports.add(i)
-                    # Interpreter(fileImport).Build()
-                # Interpreter()
+                    EXECUTE = PrintException("ModuleNotFoundError",f"import",fileImport,self.file,self.lines)
 
             if token == TT_DEFINATION:
                 if self.tokens[count-1]["type"] == TT_TYPE or self.tokens[count-1]["type"] == TT_KEYWORD and self.tokens[count-1]["value"] in {'class','import'} or self.tokens[count-1]["type"] == TT_DEFINATION and self.tokens[count-1]["value"] in class_:
                     pass
                 else:
-                    if value["value"] not in scope:
-                        if not value["value"] in SCOPE:
-                            # print(f"{value['value']} not Defined")
-                            EXECUTE = PrintExecption("NameError",value["value"],value["value"],self.file)
-                        # print(self.typeScope[scope.index(value["value"])])
-                        # print(se)
-                        # pass
-                        # print(value["value"])
+                    plotMsg = ""
+                    if value["value"] not in SCOPE["GLOBAL"]:
+                        for i in SCOPE["NOGLOBAL"]:
+                            if value["value"] in SCOPE["NOGLOBAL"][i]:
+                                plotMsg = "TRAVADO"
+                                break
+                            else:
+                                if plotMsg != "TRAVADO":
+                                    EXECUTE = PrintException("NameError",value["value"],value["value"],self.file,self.lines)
 
             if token == TT_SYMBOL:
-                if (value["value"] == "{"):
-                    blockCommandCount += 1
-                if (value["value"] == "}"):
-                    if blockCommandCount == 1:
-                        scope.clear()
-                        typeScope.clear()
-                        isScope.clear()
-                        self.scopeName = ""
-                        blockCommandCount = 0
-                    else:
-                        blockCommandCount -= 1
-                    # print(self.tokens[count+1]["value"],self.tokens[count+1]["type"],self.tokens[count+1]["name"])
+                if value["value"] == '}':
+                    try:
+                        del SCOPE["NOGLOBAL"][self.nameScope[-1]]
+                        del self.nameScope[-1]
+                    except:pass
 
             if value["value"] == "class" and token == TT_KEYWORD:
                 alertExp = self.tokens[count+1]
                 if (alertExp["type"] != TT_DEFINATION):
                     if self.tokens[count+2]["type"] != TT_DEFINATION:
-                        EXECUTE = PrintExecption("SyntaxError","class",alertExp["value"],self.file)
+                        EXECUTE = PrintException("SyntaxError","class",alertExp["value"],self.file,self.lines)
                         break
 
                 for cc,vv in enumerate(self.tokens[count+1:]):
@@ -189,9 +184,6 @@ class Parser:
 
                         self.class_ =  vv["value"]
                         class_.append(vv["value"])
-                        scope.append(vv["value"])
-                        typeScope.append("class")
-                        isScope.append("class")
                         break        
                 
             if value["value"] == "constructor" and token == TT_KEYWORD:
@@ -222,9 +214,10 @@ class Parser:
                 if (alertExp["type"] != TT_DEFINATION):
                     # AQUI ENTRA UM EX
                     if self.tokens[count+2]["type"] != TT_DEFINATION:
-                        EXECUTE = PrintExecption("SyntaxError",type_name_,alertExp["value"],self.file)
+                        EXECUTE = PrintException("SyntaxError",type_name_,alertExp["value"],self.file,self.lines)
                         break
                     else:
+                        # print(self.tokens[count+2]["value"])
                         name_ = self.tokens[count+2]["value"]
 
                 else:
@@ -264,19 +257,32 @@ class Parser:
                                     break
 
                 if is_variable_or_function == "function":
-                    if self.scopeName == "":
-                        self.scopeName = name_        
-                        SCOPE.append(name_)
-            
-                if self.scopeName != "":
-                    scope.append(name_)
-                    typeScope.append(type_name_)
-                    isScope.append(is_variable_or_function)
-                # print(is_variable_or_function+":"+name_,type_name_)
+                    print(name_)
+                    if len(SCOPE["NOGLOBAL"]) == 0:
+                        SCOPE["GLOBAL"][name_] = []
+
+                    SCOPE["NOGLOBAL"][name_] = []
+                    self.nameScope.append(name_)
+
+                # print(name_)
+                SCOPE["NOGLOBAL"][self.nameScope[-1]].append(name_)
+                
+                #############################################################
+                # AGEITA O SISTEMA DE DETECÇÂO POIS NÃO ESTA 100% FUNCIONAL #
+                #############################################################
+
+
+                # except:
+                #     print(self.nameScope)
+                # print(SCOPE["NOGLOBAL"][self.nameScope[-1]])
+
+
+
             if isAppend == True:
                 self.lang.append([self.tokens[count]["type"],self.tokens[count]["value"]])
 
 
     def Get(self):
         # print(scope)
+        # print(SCOPE)
         return [EXECUTE,ENTRY_POINT_DEFINED,self.lang,imports,class_,terch_code_append,imports_code]

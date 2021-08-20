@@ -1,0 +1,9 @@
+int 
+p(){
+    int s = 10;
+}
+int test(){
+    int 
+    a = 10;
+    p()
+}
