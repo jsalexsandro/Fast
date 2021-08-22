@@ -51,7 +51,7 @@ class Transpiler:
             # "/* using namespace std;\n */"
             "char ** argv;\n"
         ]
-        self.implemenst = {"{",")",",",";","|","&","+"}
+        self.implemenst = {"{",")",",",";","|","&","+","="}
         self.no_ = {"else"}
         self.native_imports = set()
         # self.languagePathBuilds = os.path.join("\ "[0].join([i for i in sys.argv[0].split("\\")[0:-1]]),"run")

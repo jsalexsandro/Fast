@@ -186,8 +186,11 @@ class Parser:
                         class_.append(vv["value"])
                         break        
                 
+            
             if value["value"] == "constructor" and token == TT_KEYWORD:
                 self.tokens[count]["value"] = self.class_
+                # self.nameScope.append("constructor")
+                
                 # self.class_ = ""
 
             if token == TT_TYPE:
@@ -209,43 +212,60 @@ class Parser:
                 is_variable_or_function = ""
                 name_ = ""
                 type_name_ = self.tokens[count]["value"]
-                # for cc,vv in enumerate(self.tokens[count+1:]):
                 alertExp = self.tokens[count+1]
                 if (alertExp["type"] != TT_DEFINATION):
                     # AQUI ENTRA UM EX
-                    if self.tokens[count+2]["type"] != TT_DEFINATION:
-                        EXECUTE = PrintException("SyntaxError",type_name_,alertExp["value"],self.file,self.lines)
-                        break
-                    else:
-                        # print(self.tokens[count+2]["value"])
-                        name_ = self.tokens[count+2]["value"]
+                    for cc,vv in enumerate(self.tokens[count+2:]):
+                        if vv["type"] == TT_SYMBOL and vv["name"] == "newLine":
+                            continue
+                        else:
+                            if (vv["type"] == TT_DEFINATION):
+                                name_ = vv["value"]
+                                break
+                            else:
+                                # print("ISSO É UM ERROR",vv["value"])
+                                EXECUTE = PrintException("SyntaxError",type_name_,alertExp["value"],self.file,self.lines)
+                                break
+                        # if vv["type"] != TT_DEFINATION:
+                        #     print(vv["value"])
+                        #     EXECUTE = PrintException("SyntaxError",type_name_,alertExp["value"],self.file,self.lines)
+                        #     break
+                        # else:
+                        #     # print(self.tokens[count+2]["value"])
+                        #     name_ = vv["value"]
+                            # break
 
                 else:
                     name_ = alertExp["value"]
 
+
                 for cc,vv in enumerate(self.tokens[count+2:]):
-                    alertExp = self.tokens[count+2]
-                    if (alertExp["value"]) == "(":
-                        if is_variable_or_function == "":
-                            is_variable_or_function = "function"
-                            break
-
-                    elif (alertExp["value"]) == "=":
-                        if is_variable_or_function == "":
-                            is_variable_or_function = "variable"
-                            break
-
-                    elif (alertExp["value"]) == ",":
-                            is_variable_or_function = "variable"
-                            break
-                    else:
-                        is_variable_or_function = "not-detected"
+                    alertExp = vv
+                    # print(alertExp["value"])
+                    if (alertExp["value"]) == "=":
+                        is_variable_or_function = "variable"
                         break
+                    
+                    if (alertExp["value"]) == "(":
+                        is_variable_or_function = "function"
+                        break
+
+                    if (alertExp["value"]) == ",":
+                        is_variable_or_function = "variable"
+                        break
+
+                    if (alertExp["value"]) == ")":
+                        is_variable_or_function = "variable"
+                        break
+
+                    is_variable_or_function = "not-detected"
+                    continue    # break
 
                 for cc,vv in enumerate(self.tokens[count+1:]):
                     if self.tokens[count+cc+1]["type"] == TT_DEFINATION:
                         if self.tokens[count+cc+1]["value"] == self.port_func_run:
                             ENTRY_POINT_DEFINED = True
+
 
                         if self.tokens[count+cc+1]["value"] == "main":
                             self.tokens[count+cc+1]["value"] = "__main__"
@@ -256,8 +276,11 @@ class Parser:
                                     defined = [vvv["value"]][0]
                                     break
 
+                # print(is_variable_or_function)
+                if name_ == "main":
+                    name_ = "__main__"
+
                 if is_variable_or_function == "function":
-                    print(name_)
                     if len(SCOPE["NOGLOBAL"]) == 0:
                         SCOPE["GLOBAL"][name_] = []
 
@@ -265,6 +288,7 @@ class Parser:
                     self.nameScope.append(name_)
 
                 # print(name_)
+                # print(SCOPE["NOGLOBAL"][self.nameScope[-1]])
                 SCOPE["NOGLOBAL"][self.nameScope[-1]].append(name_)
                 
                 #############################################################
