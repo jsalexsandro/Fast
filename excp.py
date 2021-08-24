@@ -5,7 +5,6 @@
 # Github: https://github.com/jsalexsandro #
 ###########################################
 
-1
 def PrintException(type,ins,value="",file="",line=1):
     if type == "ModuleNotFoundError":
         print(f'ModuleNotFoundError in {ins} - "{value}" module not found\nFile: {file}::{line}\n')

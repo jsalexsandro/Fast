@@ -151,14 +151,36 @@ class Parser:
                     pass
                 else:
                     plotMsg = ""
-                    if value["value"] not in SCOPE["GLOBAL"]:
+                    self.veriFy = False
+                    # print(SCOPE["GLOBAL"])
+                    if value["value"] == "":
+                        self.veriFy = not self.veriFy
+                        plotMsg = "TRAVADO"
+                        
+                    for i in SCOPE["GLOBAL"]:
+                        if i == value["value"]:
+                            # print(i)
+                            self.veriFy = not self.veriFy
+                            plotMsg = "TRAVADO"
+                            break
+                        else:
+                            continue
+
+                    if self.veriFy == False:
                         for i in SCOPE["NOGLOBAL"]:
-                            if value["value"] in SCOPE["NOGLOBAL"][i]:
-                                plotMsg = "TRAVADO"
-                                break
-                            else:
-                                if plotMsg != "TRAVADO":
-                                    EXECUTE = PrintException("NameError",value["value"],value["value"],self.file,self.lines)
+                            for cc,vv in enumerate(SCOPE["NOGLOBAL"][i]):
+                                # print(SCOPE["NOGLOBAL"][i][cc][0])
+                                if value["value"] == SCOPE["NOGLOBAL"][i][cc][0]:
+                                    # print("SIM")
+                                    plotMsg = "TRAVADO"
+                                    # break
+                                #     break
+                                else:
+                                    if plotMsg == "":
+                                        plotMsg = "DESTRAVADO"
+                    if plotMsg != "TRAVADO":
+                        EXECUTE = PrintException("NameError",value["value"],value["value"],self.file,self.lines)
+                    # print(plotMsg)
 
             if token == TT_SYMBOL:
                 if value["value"] == '}':
@@ -289,7 +311,7 @@ class Parser:
 
                 # print(name_)
                 # print(SCOPE["NOGLOBAL"][self.nameScope[-1]])
-                SCOPE["NOGLOBAL"][self.nameScope[-1]].append(name_)
+                SCOPE["NOGLOBAL"][self.nameScope[-1]].append([name_,type_name_])
                 
                 #############################################################
                 # AGEITA O SISTEMA DE DETECÇÂO POIS NÃO ESTA 100% FUNCIONAL #

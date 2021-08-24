@@ -1,4 +1,4 @@
-// // "Hello World" using function as entry point
+// "Hello World" using function as entry point 
 
 int helloworld(){
     print("Hello World!");

@@ -102,7 +102,7 @@ class Lexer:
                 coment_init = 1
         
             elif value == "\n" and coment_init == 1 and float_init == 0:
-                # self.tokens.append(AppendToken(TT_SYMBOL,symbols[" "],""))
+                self.tokens.append(AppendToken(TT_SYMBOL,symbols["\n"],""))
                 # self.codeSplitedKeys[count] = ""
                 coment_init = 0
 
@@ -174,7 +174,11 @@ class Lexer:
                 elif coment_init == 1:
                     self.tokens.append(AppendToken(TT_COMENT,value,value))
                 elif float_init == 1:
-                    self.tokens.append(AppendToken(TT_COMENT,value,value))
+                    if value == "\n":
+                        # print("IMS")
+                        self.tokens.append(AppendToken(TT_SYMBOL,symbols[value],""))
+                    else:
+                        self.tokens.append(AppendToken(TT_COMENT,value,value))
                 else:
                     self.tokens.append(AppendToken(TT_DEFINATION,value,value))
         return self.tokens
