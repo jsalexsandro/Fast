@@ -1,14 +1,5 @@
 // "Hello World" using function as entry point 
 
-int app(){  
-    print("Olá, Mundo!")
-}
-
-int app(){
-    print("Olá, Mundo!")
-}
-
 int helloworld(){
-    int a = 10;
-    print("Olá, Mundo!",a)
+    print("Olá, Mundo!")
 }
