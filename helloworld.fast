@@ -1,13 +1,14 @@
 // "Hello World" using function as entry point 
 
-int helloworld(){
-    print("Hello World!");
-};
+int app(){  
+    print("Olá, Mundo!")
+}
 
-// // "Hello World" using class as entry point
- 
-// // class helloworld {
-// //    public constructor(){
-// //        print("Hello World!");
-// //    };
-// //};
+int app(){
+    print("Olá, Mundo!")
+}
+
+int helloworld(){
+    int a = 10;
+    print("Olá, Mundo!",a)
+}

@@ -79,24 +79,24 @@ class Parser:
         if not v[1] in terch_code_append:
             terch_code_append.add(v[1])
 
-    def AddNewScope(self,c):
+    def AddNewScope(self,c,type):
         global SCOPE
         try:
             if not c in SCOPE["GLOBAL"][c]:
-                SCOPE["GLOBAL"][c] = []
+                SCOPE["GLOBAL"][c] = [type]
             # pass
         except:
-            SCOPE["GLOBAL"][c] = []
+            SCOPE["GLOBAL"][c] = [type]
     
     def setImport(self,c):
         global imports
         if (not c in imports):
             imports.add(c)
 
-    def setAutomaticCodeImport(self,c,t,ii,set):
+    def setAutomaticCodeImport(self,c,t,ii,set,type=""):
         if c == ii and t == TT_DEFINATION:
             self.setNewCode(set)
-            self.AddNewScope(ii)
+            self.AddNewScope(ii,type)
 
     def setCodeImports(self,v):
         global imports_code
@@ -104,27 +104,55 @@ class Parser:
             imports_code.add(v)
 
 
+    def addCodeImports(self,value,token):
+        self.setAutomaticCodeImport(value["value"],token,"print",print_fast,"string")
+        self.setAutomaticCodeImport(value["value"],token,"input",input_fast,"string")
+        # self.setAutomaticCodeImport(value["value"],token,"sendException",types_fast)
+        self.setAutomaticCodeImport(value["value"],token,"type",types_fast,"string")
+        self.setAutomaticCodeImport(value["value"],token,"stringToInt",types_fast,"string")
+        self.setAutomaticCodeImport(value["value"],token,"system",system_fast,"int")
+          
+    def returnValues(self,vv):
+        self.veriFy = True
+        self.plotError = ""
+        self.state = ''    
+        for _cc_,_vv_ in enumerate(SCOPE["GLOBAL"]):
+            if vv["value"] == _vv_:
+                self.veriFy = False
+                self.state = SCOPE["GLOBAL"][_vv_][0]
+                # print(SCOPE["GLOBAL"][_vv_][0])
+                self.plotError = "TRAVADO"
+                break
+
+        if self.veriFy == True:
+            for _cc_,_vv_ in enumerate(SCOPE["NOGLOBAL"][self.nameScope[-1]]):
+                if vv["value"] == _vv_[0]: 
+                    self.plotError = "TRAVADO"
+                    self.state = _vv_[1]
+                    # print(_vv_)
+                    break
+        
+
     def Analitys(self): 
         global EXECUTE,ERROS,ENTRY_POINT_DEFINED,SCOPE,imports,class_,terch_code_append
         self.nameScope = []
+        self.nameGlobalScope = ""
+        self.typeGlobalScope = ""
         self.countScope = -1
         self.lines = 1
         
         for count,value in enumerate(self.tokens):
             isAppend = True
             token = value["type"]
+
+            if self.tokens[count-1]["type"] != TT_TYPE:
+                self.addCodeImports(value,token)
+
             if token == TT_SYMBOL:
                 if self.tokens[count]["name"] == "newLine":
                     self.lines += 1
                     isAppend = False
-
-            self.setAutomaticCodeImport(value["value"],token,"print",print_fast)
-            self.setAutomaticCodeImport(value["value"],token,"input",input_fast)
-            # self.setAutomaticCodeImport(value["value"],token,"sendException",types_fast)
-            self.setAutomaticCodeImport(value["value"],token,"type",types_fast)
-            self.setAutomaticCodeImport(value["value"],token,"stringToInt",types_fast)
-            self.setAutomaticCodeImport(value["value"],token,"system",system_fast)
-          
+                              
             if (value["value"] == "import" and token == TT_KEYWORD):
                 fileImport = ""
                 if (self.tokens[count+1]["type"] == TT_DEFINATION):
@@ -159,7 +187,7 @@ class Parser:
                         
                     for i in SCOPE["GLOBAL"]:
                         if i == value["value"]:
-                            # print(i)
+                            # print(">>>",SCOPE["GLOBAL"][i])
                             self.veriFy = not self.veriFy
                             plotMsg = "TRAVADO"
                             break
@@ -171,6 +199,7 @@ class Parser:
                             for cc,vv in enumerate(SCOPE["NOGLOBAL"][i]):
                                 # print(SCOPE["NOGLOBAL"][i][cc][0])
                                 if value["value"] == SCOPE["NOGLOBAL"][i][cc][0]:
+                                    # print(SCOPE["NOGLOBAL"][i][cc])
                                     # print("SIM")
                                     plotMsg = "TRAVADO"
                                     # break
@@ -187,7 +216,56 @@ class Parser:
                     try:
                         del SCOPE["NOGLOBAL"][self.nameScope[-1]]
                         del self.nameScope[-1]
+                        self.nameGlobalScope = ""
+                        self.typeGlobalScope = ""
                     except:pass
+
+
+            if value["value"] == "return" and token == TT_KEYWORD:
+                for cc,vv in enumerate(self.tokens[count+1:]):
+                    if vv["name"] == "newLine" and vv["type"] == TT_SYMBOL:
+                        continue
+
+                    elif vv["type"] == TT_DEFINATION:
+                        self.returnValues(vv)                                
+                        if self.plotError == "TRAVADO":
+                            if self.state != self.typeGlobalScope:
+                                print(self.state)
+                                EXECUTE = PrintException("ReturnError","return",vv["value"],self.file,self.lines)
+                        else:
+                            self.addCodeImports(vv,vv["type"])
+                            self.returnValues(vv)                                
+                            if self.plotError == "TRAVADO":
+                                if self.state != self.typeGlobalScope:
+                                    EXECUTE = PrintException("ReturnError","return",vv["value"],self.file,self.lines)
+                        break
+
+                    elif vv["type"] in {TT_NUMBER,TT_STRING,TT_BOOL}:
+                        if self.typeGlobalScope == "int":
+                            if (vv["type"] != TT_NUMBER):
+                                EXECUTE = PrintException("ReturnError","return",vv["value"],self.file,self.lines)
+                                break
+
+                        if self.typeGlobalScope == "string":
+                            if (vv["type"] != TT_STRING):
+                                EXECUTE = PrintException("ReturnError","return",vv["value"],self.file,self.lines)                     
+                                break
+
+                        if self.typeGlobalScope == "bool":
+                            if (vv["type"] != TT_BOOL):
+                                EXECUTE = PrintException("ReturnError","return",vv["value"],self.file,self.lines)
+                                break
+
+                        if self.typeGlobalScope == "float":
+                            if (vv["type"] != TT_NUMBER):
+                                EXECUTE = PrintException("ReturnError","return",vv["value"],self.file,self.lines)
+                                break
+
+                    elif vv["value"] == "}" and vv["type"] == TT_SYMBOL:
+                        break
+
+                    else:
+                        pass
 
             if value["value"] == "class" and token == TT_KEYWORD:
                 alertExp = self.tokens[count+1]
@@ -248,15 +326,6 @@ class Parser:
                                 # print("ISSO É UM ERROR",vv["value"])
                                 EXECUTE = PrintException("SyntaxError",type_name_,alertExp["value"],self.file,self.lines)
                                 break
-                        # if vv["type"] != TT_DEFINATION:
-                        #     print(vv["value"])
-                        #     EXECUTE = PrintException("SyntaxError",type_name_,alertExp["value"],self.file,self.lines)
-                        #     break
-                        # else:
-                        #     # print(self.tokens[count+2]["value"])
-                        #     name_ = vv["value"]
-                            # break
-
                 else:
                     name_ = alertExp["value"]
 
@@ -304,8 +373,21 @@ class Parser:
 
                 if is_variable_or_function == "function":
                     if len(SCOPE["NOGLOBAL"]) == 0:
-                        SCOPE["GLOBAL"][name_] = []
+                        try:
+                            affterScope = SCOPE["GLOBAL"][name_][0]
+                            if affterScope == type_name_:
+                                SCOPE["GLOBAL"][name_] = [type_name_]
+                                self.nameGlobalScope = name_
+                                self.typeGlobalScope = type_name_
+                            else:
+                                EXECUTE = PrintException("RedefinationError",f"{type_name_}|{affterScope}",name_,self.file,self.lines)
+                            # print(SCOPE["GLOBAL"][name_])
 
+                        except:
+                            SCOPE["GLOBAL"][name_] = [type_name_]
+                            self.nameGlobalScope = name_
+                            self.typeGlobalScope = type_name_
+                        
                     SCOPE["NOGLOBAL"][name_] = []
                     self.nameScope.append(name_)
 
@@ -316,13 +398,6 @@ class Parser:
                 #############################################################
                 # AGEITA O SISTEMA DE DETECÇÂO POIS NÃO ESTA 100% FUNCIONAL #
                 #############################################################
-
-
-                # except:
-                #     print(self.nameScope)
-                # print(SCOPE["NOGLOBAL"][self.nameScope[-1]])
-
-
 
             if isAppend == True:
                 self.lang.append([self.tokens[count]["type"],self.tokens[count]["value"]])

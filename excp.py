@@ -14,12 +14,16 @@ def PrintException(type,ins,value="",file="",line=1):
         print(f'RecursiveImportError in "{ins} {value}" cannot import the same file\nFile: {file}::{line}\n\n')
         return False
     
-    if type == "SemiColonError":
-        print(f'Error in "{ins}" Expected ";" before "{value}" \nFile: {file}::{line}\n')
+    if type == "ReturnError":
+        print(f'ReturnError in "{ins}" - A function must return a value that matches its type in "return {value}" \nFile: {file}::{line}\n')
         return False
 
     if type == "NameError":
         print(f'NameError - "{value}" has not been defined \nFile: {file}::{line}\n')
+        return False
+
+    if type == "RedefinationError":
+        print(f'RedefinationError - "{str(ins).split("|")[0]} {value}" to redefine a function or variable, it must have the same type as the first definition ({str(ins).split("|")[1]}). \nFile: {file}::{line}\n')
         return False
 
     if type == "SyntaxError":
