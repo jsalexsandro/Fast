@@ -28,6 +28,7 @@ types
 from langParse import Parser
 from msg import generated_code_for_insert
 
+entryPoints = set()
 
 class Transpiler:
     def __init__(self,code,file_,module=False) -> None:
@@ -40,6 +41,7 @@ class Transpiler:
         if entryPointExist == False:
             if module == False:
                 sys.exit( print("Entry point not defined!"))
+        self.entryPointExist = entryPointExist
         file=file_
         self.values = parser[2]
         impors=parser[3]
@@ -59,6 +61,7 @@ class Transpiler:
         self.languagePathNormal = os.path.join(os.getcwd(),"")
         # self.languagePathBuilds = "C:\\Users\\Alexsandro\\Desktop\\FastLanguage" + "\\run"
         self.file = file
+        self.__file = GetFinalExtension(self.file).replace(".fast","")
         # if not os.path.exists(self.languagePathBuilds):
         #     os.mkdir(self.languagePathBuilds)
         self.lang = ""
@@ -207,6 +210,13 @@ class Transpiler:
 
             self.lang += value
 
+        if self.entryPointExist:
+            global entryPoints
+            __file = self.__file
+            if not __file in entryPoints:
+                entryPoints.add(__file)
+            
+
         if self.module == False:
             self.setMainFuncPoint()
             self.setCodeImports()
@@ -231,13 +241,20 @@ class Transpiler:
 
 
     def setMainFuncPoint(self):
+        global entryPoints
         port_func_run = GetFinalExtension(self.file).replace(".fast","")
+        official_port_run = port_func_run
+        outers_imports = ""
         if port_func_run == "main":
             port_func_run = "__main__"
+        for i in entryPoints:
+            if i != official_port_run:
+                outers_imports += f"{i}();\n"
         codeMain = [
             "\n\nint main(int _argc,char * _argv[]){\n",
             'setlocale(LC_ALL,"");\n',
-            "argv = _argv;\n"
+            "argv = _argv;\n",
+            outers_imports,
             f"{port_func_run}();\n",
             "return 0;\n",
             "};"
