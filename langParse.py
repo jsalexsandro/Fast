@@ -240,14 +240,14 @@ class Parser:
                                     EXECUTE = PrintException("ReturnError","return",vv["value"],self.file,self.lines)
                         break
 
-                    elif vv["type"] in {TT_NUMBER,TT_STRING,TT_BOOL}:
-                        if self.typeGlobalScope == "int":
+                    elif vv["type"] in {TT_NUMBER,TT_STRING,TT_BOOL} or vv["type"] == TT_SYMBOL and vv["name"] in {'singleQuote','doubleQuote'}:
+                        if self.typeGlobalScope in {"int","float"}:
                             if (vv["type"] != TT_NUMBER):
                                 EXECUTE = PrintException("ReturnError","return",vv["value"],self.file,self.lines)
                                 break
 
                         if self.typeGlobalScope == "string":
-                            if (vv["type"] != TT_STRING):
+                            if (vv["type"] not in {TT_STRING,TT_SYMBOL}):
                                 EXECUTE = PrintException("ReturnError","return",vv["value"],self.file,self.lines)                     
                                 break
 
@@ -255,18 +255,138 @@ class Parser:
                             if (vv["type"] != TT_BOOL):
                                 EXECUTE = PrintException("ReturnError","return",vv["value"],self.file,self.lines)
                                 break
-
-                        if self.typeGlobalScope == "float":
-                            if (vv["type"] != TT_NUMBER):
-                                EXECUTE = PrintException("ReturnError","return",vv["value"],self.file,self.lines)
-                                break
-
+                            
                     elif vv["value"] == "}" and vv["type"] == TT_SYMBOL:
                         break
 
                     else:
                         pass
 
+            if value["value"] == "=" and token == TT_SYMBOL:
+                isContinue = True
+                for i in self.tokens[count+1:]:     
+                    if i["type"] == TT_SYMBOL and i["name"] == "newLine":
+                        continue
+
+                    if i["value"] in {"=","<"}:
+                        isContinue = False
+                        break
+                   
+                if isContinue == False:
+                    pass
+                else:
+                    for cc,vv in enumerate(self.tokens[count+1:]):
+                        if vv["name"] == "newLine":
+                            continue
+                        elif vv["type"] == TT_DEFINATION:
+                            variableName = ""
+                            variableAttName = vv["value"]
+                            self.attState = ""
+                            self.state = ""
+                            _count_ = 1
+                            while True:
+                                if self.tokens[count-_count_]["name"] != "newLine":
+                                    if self.tokens[count-_count_]["type"] == TT_DEFINATION:
+                                        variableName = self.tokens[count-_count_]["value"] 
+                                        # print(variableName)
+                                        break
+                                _count_ += 1
+                            plotMsg = ""
+                            self.veriFy = False
+                            for i in SCOPE["GLOBAL"]:
+                                if variableName == i:
+                                    self.state = SCOPE["GLOBAL"][i][0]
+                                    plotMsg = "TRAVADO"
+                                    break
+                                else:
+                                    self.veriFy = True
+                                    continue
+                            if self.veriFy == True:
+                                for i in SCOPE["NOGLOBAL"]:
+                                    for ii in SCOPE["NOGLOBAL"][i]:
+                                        if variableName == ii[0]:
+                                            plotMsg = "TRAVADO"
+                                            self.state = ii[1]
+                                            break  
+                                        else:
+                                            continue
+                            twoplotMsg = ""
+                            self.twoVeriFy = False
+                            for i in SCOPE["GLOBAL"]:
+                                if variableAttName == i:
+                                    self.attState = SCOPE["GLOBAL"][i][0]
+                                    twoplotMsg = "TRAVADO"
+                                    break
+                                else:
+                                    self.twoVeriFy = True
+                                    continue
+
+                            if self.twoVeriFy == True:
+                                for i in SCOPE["NOGLOBAL"]:
+                                    for ii in SCOPE["NOGLOBAL"][i]:
+                                        if variableAttName == ii[0]:
+                                            twoplotMsg = "TRAVADO"
+                                            self.attState = ii[1]
+                                            break  
+                                        else:
+                                            continue
+
+                            if plotMsg == twoplotMsg:
+                                if (self.state != self.attState):
+                                    EXECUTE = PrintException("AtributeError",'','',self.file,self.lines)
+
+                            # print(variableName,self.state,plotMsg)
+                            # print(variableAttName,self.attState,twoplotMsg)
+
+                        elif vv["type"] in {TT_NUMBER,TT_STRING,TT_BOOL} or vv["type"] == TT_SYMBOL and vv["name"] in {'singleQuote','doubleQuote'}:
+                            atualType = vv["type"]
+                            variableName = ""
+                            self.state = ""
+                            _count_ = 1
+                            while True:
+                                if self.tokens[count-_count_]["name"] != "newLine":
+                                    if self.tokens[count-_count_]["type"] == TT_DEFINATION:
+                                        variableName = self.tokens[count-_count_]["value"] 
+                                        # print(variableName)
+                                        break
+                                _count_ += 1
+                            plotMsg = ""
+                            self.veriFy = False
+                            for i in SCOPE["GLOBAL"]:
+                                if variableName == i:
+                                    self.state = SCOPE["GLOBAL"][i][0]
+                                    plotMsg = "TRAVADO"
+                                    break
+                                else:
+                                    self.veriFy = True
+                                    continue
+                            if self.veriFy == True:
+                                for i in SCOPE["NOGLOBAL"]:
+                                    for ii in SCOPE["NOGLOBAL"][i]:
+                                        if variableName == ii[0]:
+                                            plotMsg = "TRAVADO"
+                                            self.state = ii[1]
+                                            break  
+                                        else:
+                                            continue 
+
+                            if plotMsg == "TRAVADO":
+                                if self.state in {"int","float"}:
+                                    if (atualType != TT_NUMBER):
+                                        EXECUTE = PrintException("AtributeError","","",self.file,self.lines)
+                                        break
+
+                                if self.state == "string":
+                                    if (atualType not in {TT_STRING,TT_SYMBOL}):
+                                        EXECUTE = PrintException("AtributeError","","",self.file,self.lines)
+                                        break
+
+                                if self.state == "bool":
+                                    if (atualType != TT_BOOL):
+                                        EXECUTE = PrintException("AtributeError","","",self.file,self.lines)
+                                        break
+                                break
+        
             if value["value"] == "class" and token == TT_KEYWORD:
                 alertExp = self.tokens[count+1]
                 if (alertExp["type"] != TT_DEFINATION):

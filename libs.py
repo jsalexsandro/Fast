@@ -9,13 +9,21 @@
 print_fast = [["<iostream>"],r"""/*
  * Write in Terminal
 */
-std::string print(){std::cout<<'\n';}
-template<typename T, typename ...ARGV>
-std::string print(T value, ARGV... values){
-std::cout<<value<<" ";
-print(values...);
+
+template <class T>
+std::string print(T value){
+std::cout << value << "\n";
 return "null";
 }
+
+template <class T, class ...Targs>
+int print(T value,Targs ...args)
+{
+std::cout << value << " ";
+print(args...);
+return "null";
+}
+
 """]
 
 input_fast = [["<iostream>"],r"""/*

@@ -108,7 +108,8 @@ class Transpiler:
             if typ == TT_NUMBER:
                 if (
                     self.values[count+1][1] not in self.implemenst and
-                    self.values[count+1][0] != TT_OPERATOR
+                    self.values[count+1][0] != TT_OPERATOR and
+                    self.values[count+1][1] != "."
                     # and self.values[count+2][1] != ")"
                 ): 
                     value += ";\n"
@@ -311,7 +312,7 @@ class Transpiler:
         with open(self.fileBuild,"wt+") as file:
             file.write(self.lang)
         
-        os.system("g++ "+self.fileBuild +" -w -O3 -o "+self.fileBuild_Name)
+        os.system("g++ "+self.fileBuild +" -w -fpermissive -O3 -o "+self.fileBuild_Name)
         # fileNormalBuild = os.path.join(self.languagePathNormal,fileBuilded)
         # if os.path.exists(fileNormalBuild):
         #     os.remove(fileNormalBuild)

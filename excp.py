@@ -18,6 +18,10 @@ def PrintException(type,ins,value="",file="",line=1):
         print(f'ReturnError in "{ins}" - A function must return a value that matches its type in "return {value}" \nFile: {file}::{line}\n')
         return False
 
+    if type == "AtributeError":
+        print(f'AtributeError - You can only assign the variable a value that matches its type. \nFile: {file}::{line}\n')
+        return False
+
     if type == "NameError":
         print(f'NameError - "{value}" has not been defined \nFile: {file}::{line}\n')
         return False
