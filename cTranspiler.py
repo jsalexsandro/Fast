@@ -12,7 +12,7 @@ def debug(a="",b=""):
 import os,sys
 from re import T
 from variables import GetFinalExtension, extForBuild
-from langLexer import (Lexer,
+from langLexer import (TT_CPP, Lexer,
 TT_BOOL, 
 TT_COMENT,
 TT_DEFINATION, 
@@ -67,15 +67,57 @@ class Transpiler:
         self.lang = ""
         self.setString = False
         self.countString = 0
+        self.countCppCode = 0
+        self.countInitArray = 0
         for count,value in enumerate(self.values):
             typ = value[0]
             value = value[1]
+            
+            #### DEPOIS IMPLEMENTA O SISTEMA DE CALL C++
 
 
-            # debug(typ,value)
-            # if typ == TT_SYMBOL and value == "\n":
-            #     if self.values[count-1][1] not in {";","{","[","("}:
-            #         value = ";\n"
+            if typ == TT_SYMBOL and value in "[]":
+                isList = False
+                __count__ = 1
+                while True: 
+                    v =self.values[count-__count__]
+                    if v[0] == TT_SYMBOL and v[1] == "\n":
+                        continue
+                    elif v[0] == TT_DEFINATION:
+                        self.countInitArray += 1
+                        break
+                    elif value == "[":
+                        self.countInitArray += 1
+                        ouCount = 0
+                        while True:
+                            vv = self.values[count-__count__-ouCount]
+                            print(vv)
+                            if vv[0] == TT_DEFINATION:
+                                value = "["
+                                break
+                            value = "{"
+                            ouCount += 1
+                            break
+                        break
+
+                    if value == "]":
+                        self.countInitArray -= 1
+                        ouCount = 1
+                        while True:
+                            vv = self.values[count-__count__-ouCount]
+                            if vv[0] == TT_DEFINATION:
+                                break
+                            if vv[0] == TT_SYMBOL and vv[1] == "=":
+                                value = "}"
+                                break
+                            if vv[0] == TT_SYMBOL and vv[1] == "[":
+                                # value = "["
+                                break
+                            ouCount += 1
+                        break
+                    
+                    __count__ += 1
+    
 
             if typ == TT_SYMBOL and value in {'"',"'"} and self.setString == False:
                 value = 'std::string("'
@@ -88,39 +130,44 @@ class Transpiler:
                     # and self.values[count+2][1] != ")"
 
                 ):
-                    value += ";\n"          
+                    
+                    if self.countInitArray == 0:value += ";\n"          
 
                 self.setString = False
 
-            if typ == TT_SYMBOL and value in {";","{","["}:
-                value += "\n"
 
-            try:
-                if typ == TT_SYMBOL:
-                    if (value in {")","]","}"}):
-                        if (
-                            self.values[count+1][1] not in self.implemenst
-                            and self.values[count+1][1] not in self.no_
-                            # and self.values[count+2][1] != "{"
-                        ): 
-                            value += ";\n"
-            except:pass
-            if typ == TT_NUMBER:
-                if (
-                    self.values[count+1][1] not in self.implemenst and
-                    self.values[count+1][0] != TT_OPERATOR and
-                    self.values[count+1][1] != "."
-                    # and self.values[count+2][1] != ")"
-                ): 
-                    value += ";\n"
-                
-            if typ == TT_BOOL:
-                if (
-                    self.values[count+1][1] not in self.implemenst
-                    # and self.values[count+2][1] != ")"
-                ): 
-                    value += ";\n"
-                
+
+            if self.countInitArray == 0:
+                if typ == TT_SYMBOL and value in {";","{","["}:
+            
+                    value += "\n"
+
+                try:
+                    if typ == TT_SYMBOL:
+                        if (value in {")","]","}"}):
+                            if (
+                                self.values[count+1][1] not in self.implemenst
+                                and self.values[count+1][1] not in self.no_
+                                # and self.values[count+2][1] != "{"
+                            ): 
+                                value += ";\n"
+                except:pass
+                if typ == TT_NUMBER:
+                    if (
+                        self.values[count+1][1] not in self.implemenst and
+                        self.values[count+1][0] != TT_OPERATOR and
+                        self.values[count+1][1] != "."
+                        # and self.values[count+2][1] != ")"
+                    ): 
+                        value += ";\n"
+                    
+                if typ == TT_BOOL:
+                    if (
+                        self.values[count+1][1] not in self.implemenst
+                        # and self.values[count+2][1] != ")"
+                    ): 
+                        value += ";\n"
+                    
             # if typ == TT_OPERATOR:
             #     if (
             #         self.values[count+1][1] not in self.implemenst and

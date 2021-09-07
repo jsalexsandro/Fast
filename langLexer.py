@@ -16,11 +16,13 @@ TT_TYPE = "TYPE"
 TT_SYMBOL = "SYMBOL"
 TT_DEFINATION = "DEFINATION"
 TT_OPERATOR = "OPERATOR"
+TT_CPP = "CPP_CODE"
 
 stringInit = 0
 stringInitedQuote = ""
 coment_init = 0
 float_init = 0
+cpp_count = 0
 
 keyFors = [
     "else",
@@ -83,50 +85,58 @@ class Lexer:
 
 
     def Tokenize(self):
-        global stringInit,stringInitedQuote,coment_init,float_init
+        global stringInit,stringInitedQuote,coment_init,float_init,cpp_count
         for count,value in enumerate(self.codeSplitedKeys):
-            if value == "/" and self.codeSplitedKeys[count+1] == "*" and coment_init == 0:
+            if value == "`" and coment_init == 0 and float_init == 0 and cpp_count == 0:
+                self.tokens.append(AppendToken(TT_CPP,"","`"))
+                cpp_count += 1
+            
+            elif value == "`" and coment_init == 0 and float_init == 0 and cpp_count == 1:
+                self.tokens.append(AppendToken(TT_CPP,"","`"))
+                cpp_count = 0
+
+            elif value == "/" and self.codeSplitedKeys[count+1] == "*" and coment_init == 0 and cpp_count == 0:
                 self.codeSplitedKeys[count] = ""
                 self.codeSplitedKeys[count+1] = ""
                 float_init = 1
 
-            elif value == "*" and self.codeSplitedKeys[count+1] == "/" and float_init == 1:
+            elif value == "*" and self.codeSplitedKeys[count+1] == "/" and float_init == 1 and cpp_count == 0:
                 self.codeSplitedKeys[count] = ""
                 self.codeSplitedKeys[count+1] = ""
                 # self.tokens.append(AppendToken(TT_SYMBOL,symbols[" "],""))
                 float_init = 0
 
-            elif value == "/" and self.codeSplitedKeys[count+1] == "/" and float_init == 0:
+            elif value == "/" and self.codeSplitedKeys[count+1] == "/" and float_init == 0 and cpp_count == 0:
                 self.codeSplitedKeys[count] = ""
                 self.codeSplitedKeys[count+1] = ""
                 coment_init = 1
         
-            elif value == "\n" and coment_init == 1 and float_init == 0:
+            elif value == "\n" and coment_init == 1 and float_init == 0 and cpp_count == 0:
                 self.tokens.append(AppendToken(TT_SYMBOL,symbols["\n"],""))
                 # self.codeSplitedKeys[count] = ""
                 coment_init = 0
 
-            elif re.match("[0-9]",value) and coment_init == 0 and float_init == 0:
+            elif re.match("[0-9]",value) and coment_init == 0 and float_init == 0 and cpp_count == 0:
                 # Set String
                 if stringInit % 2 != 0:
                     self.tokens.append(AppendToken(TT_STRING,value,value))
                 else:
                     self.tokens.append(AppendToken(TT_NUMBER,""+value,""+value))
             
-            elif value in keywords and coment_init == 0 and float_init == 0:
+            elif value in keywords and coment_init == 0 and float_init == 0 and cpp_count == 0:
                 if stringInit % 2 != 0:
                     self.tokens.append(AppendToken(TT_STRING,value,value))
                 else:
                     self.tokens.append(AppendToken(TT_KEYWORD,value,value))
             
-            elif value in types and coment_init == 0 and float_init == 0:
+            elif value in types and coment_init == 0 and float_init == 0 and cpp_count == 0:
                 # Set String
                 if stringInit % 2 != 0:
                     self.tokens.append(AppendToken(TT_STRING,value,value))
                 else:
                     self.tokens.append(AppendToken(TT_TYPE,value,value))
 
-            elif value in symbols and coment_init == 0 and float_init == 0:
+            elif value in symbols and coment_init == 0 and float_init == 0 and cpp_count == 0:
                 if symbols[value] in {'singleQuote','doubleQuote'}:
                     if stringInit % 2 == 0:
                         stringInitedQuote = symbols[value]
@@ -155,13 +165,13 @@ class Lexer:
                         else:
                             self.tokens.append(AppendToken(TT_SYMBOL,symbols[value],value))
 
-            elif value in bolleans and coment_init == 0 and float_init == 0:
+            elif value in bolleans and coment_init == 0 and float_init == 0 and cpp_count == 0:
                 if stringInit % 2 != 0:
                     self.tokens.append(AppendToken(TT_STRING,value,value))
                 else:
                     self.tokens.append(AppendToken(TT_BOOL,value,value))
             
-            elif value in operators and coment_init == 0 and float_init == 0:
+            elif value in operators and coment_init == 0 and float_init == 0 and cpp_count == 0:
                 if stringInit % 2 != 0:
                     self.tokens.append(AppendToken(TT_STRING,value,value))
                 else:
@@ -179,6 +189,8 @@ class Lexer:
                         self.tokens.append(AppendToken(TT_SYMBOL,symbols[value],""))
                     else:
                         self.tokens.append(AppendToken(TT_COMENT,value,value))
+                elif cpp_count == 1:
+                        self.tokens.append(AppendToken(TT_CPP,"",value))
                 else:
                     self.tokens.append(AppendToken(TT_DEFINATION,value,value))
         return self.tokens

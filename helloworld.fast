@@ -1,5 +1,8 @@
 // "Hello World" using function as entry point 
 
 int helloworld(){
-    print("Olá, Mundo!")
+    while (true){
+        int a = 10
+        print(a)
+    }
 }

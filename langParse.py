@@ -221,6 +221,13 @@ class Parser:
                     except:pass
 
 
+            if value["value"] in ["while","for"] and token == TT_KEYWORD:
+                name_ = "loop"
+                SCOPE["NOGLOBAL"][name_] = ["<<<loop>>>"]
+                self.nameScope.append(name_)
+
+
+
             if value["value"] == "return" and token == TT_KEYWORD:
                 for cc,vv in enumerate(self.tokens[count+1:]):
                     if vv["name"] == "newLine" and vv["type"] == TT_SYMBOL:
@@ -508,10 +515,10 @@ class Parser:
                             self.nameGlobalScope = name_
                             self.typeGlobalScope = type_name_
                         
-                    SCOPE["NOGLOBAL"][name_] = []
+                    SCOPE["NOGLOBAL"][name_] = [type_name_]
                     self.nameScope.append(name_)
 
-                # print(name_)
+                print(is_variable_or_function)
                 # print(SCOPE["NOGLOBAL"][self.nameScope[-1]])
                 SCOPE["NOGLOBAL"][self.nameScope[-1]].append([name_,type_name_])
                 
